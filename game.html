@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+
+<script>(function(s){s.dataset.zone='12236223',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+<script src="ads.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>3D Ludo Arena</title>
+    <script src="capacitor.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #1e3a8a 0%, #09132e 65%, #030712 100%) !important;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            user-select: none;
+        }
+
+        /* DYNAMIC CORNER HUD BOX */
+        #ui-bar {
+            position: absolute;
+            z-index: 20;
+            background: rgba(15, 23, 42, 0.92);
+            padding: 10px 14px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.65);
+            border: 1.5px solid rgba(255,255,255,0.18);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 165px;
+            transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .pos-red { top: 24px; left: 16px; border-color: rgba(239, 68, 68, 0.6) !important; }
+        .pos-green { top: 24px; right: 16px; border-color: rgba(34, 197, 94, 0.6) !important; }
+        .pos-yellow { bottom: 75px; right: 16px; border-color: rgba(234, 179, 8, 0.6) !important; }
+        .pos-blue { bottom: 75px; left: 16px; border-color: rgba(59, 130, 246, 0.6) !important; }
+
+        .turn-title { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; font-weight: 700; }
+        .turn-row { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 7px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        #msg { font-size: 11px; color: #f8fafc; font-weight: 600; line-height: 1.3; }
+
+        #roll-btn {
+            margin-top: 2px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 800;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+            transition: 0.1s transform;
+        }
+        #roll-btn:hover:not(:disabled) { transform: scale(1.03); }
+        #roll-btn:disabled { background: #475569; cursor: not-allowed; box-shadow: none; transform: none; }
+        #dice-result { font-size: 12px; color: #cbd5e1; font-weight: bold; }
+
+        /* FLOATING CIRCULAR BOTTOM HOME BUTTON */
+        #exit-home-btn {
+            position: absolute;
+            bottom: 18px;
+            left: 18px;
+            z-index: 30;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.65);
+            backdrop-filter: blur(10px);
+            transition: transform 0.15s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        #exit-home-btn:hover { transform: scale(1.08); }
+        #exit-home-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        #fireworks-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 50; display: none;
+        }
+
+        #winner-banner {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.7);
+            background: rgba(15, 23, 42, 0.95); padding: 30px 40px; border-radius: 24px;
+            border: 2px solid #facc15; box-shadow: 0 0 50px rgba(250, 204, 21, 0.6);
+            color: #fff; text-align: center; z-index: 60; display: none;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #winner-title { font-size: 30px; font-weight: 900; color: #facc15; letter-spacing: 1px; }
+        #winner-sub { font-size: 16px; margin-top: 8px; color: #f8fafc; font-weight: 600; line-height: 1.5; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+    <script src="dice.js"></script>
+</head>
+<body>
+
+<button id="exit-home-btn" title="Dashboard" onclick="exitToDashboard()">
+    <svg viewBox="0 0 24 24">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+    </svg>
+</button>
+
+<div id="ui-bar" class="pos-red">
+    <div class="turn-title">Current Turn</div>
+    <div class="turn-row">
+        <span class="dot" id="turn-dot" style="background: #ef4444;"></span>
+        <span id="turn-txt">RED</span>
+    </div>
+    <div id="dice-result">Dice: -</div>
+    <button id="roll-btn">ROLL DICE</button>
+    <div id="msg">Click button ya 3D Dice par tap karo!</div>
+</div>
+
+<canvas id="fireworks-canvas"></canvas>
+
+<div id="winner-banner">
+    <div id="winner-title">🏆 RED WINS! 🏆</div>
+    <div id="winner-sub">Champion of 3D Ludo Arena!</div>
+</div>
+
+<script>
+// ==========================================
+// ADMOB INTEGRATION CONFIG & ENGINES
+// ==========================================
+const ADMOB_CONFIG = {
+    bannerId: 'ca-app-pub-8792473302147407/13519570',
+    interstitialId: 'ca-app-pub-8792473302147407/4652762037'
+};
+
+let isInterstitialReady = false;
+
+// 1. Bottom Banner Ad
+async function initAdMobBanner() {
+    try {
+        const AdMob = window.Capacitor?.Plugins?.AdMob;
+        if (AdMob) {
+            await AdMob.initialize({ requestTrackingAuthorization: true, testingDevices: [] });
+            await AdMob.showBanner({
+                adId: ADMOB_CONFIG.bannerId,
+                adSize: 'BANNER',
+                position: 'BOTTOM_CENTER',
+                margin: 0,
+                isTesting: false
+            });
+            console.log("AdMob: Bottom Banner displayed");
+        }
+    } catch (err) {
+        console.warn("Banner load error:", err);
+    }
+}
+
+// 2. Preload Interstitial (Match chalte waqt background me ad ready karega)
+async function preloadGameOverInterstitial() {
+    try {
+        const AdMob = window.Capacitor?.Plugins?.AdMob;
+        if (AdMob) {
+            await AdMob.prepareInterstitial({
+                adId: ADMOB_CONFIG.interstitialId,
+                isTesting: false
+            });
+            isInterstitialReady = true;
+            console.log("AdMob: Interstitial ad ready for Game Over");
+        }
+    } catch (err) {
+        console.warn("Interstitial preload error:", err);
+    }
+}
+
+// 3. Trigger Interstitial on Match Complete
+async function triggerGameOverAd() {
+    try {
+        const AdMob = window.Capacitor?.Plugins?.AdMob;
+        if (AdMob && isInterstitialReady) {
+            await AdMob.showInterstitial();
+            isInterstitialReady = false;
+            console.log("AdMob: Interstitial shown on Game Over");
+        }
+    } catch (err) {
+        console.warn("Interstitial show failed:", err);
+    }
+}
+
+const MATCH_STATE_KEY = "ludo_active_match_state_v4";
+const PROFILE_KEY = "ludo_user_profile_v4";
+
+// --- AUDIO EFFECTS SETUP ---
+const stepAudio = new Audio('step.mp3'); stepAudio.preload = 'auto';
+const sixAudio = new Audio('yeahboi.mp3'); sixAudio.preload = 'auto';
+const cutAudio = new Audio('cut.mp3'); cutAudio.preload = 'auto';
+const clickAudio = new Audio('click.mp3'); clickAudio.preload = 'auto';
+const niceAudio = new Audio('nice.mp3'); niceAudio.preload = 'auto';
+const winAudio = new Audio('finalcal.mp3'); winAudio.preload = 'auto';
+
+function playSound(audio) {
+    try {
+        audio.currentTime = 0;
+        const p = audio.play();
+        if (p !== undefined) p.catch(() => {});
+    } catch(e) {}
+}
+
+const unlockGameAudio = () => {
+    [stepAudio, sixAudio, cutAudio, clickAudio, niceAudio, winAudio].forEach(audio => {
+        audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(() => {});
+    });
+    window.removeEventListener('pointerdown', unlockGameAudio);
+    window.removeEventListener('click', unlockGameAudio);
+};
+window.addEventListener('pointerdown', unlockGameAudio);
+window.addEventListener('click', unlockGameAudio);
+
+// --- 1. PARAMETERS & CONFIG ---
+const urlParams = new URLSearchParams(window.location.search);
+const selectedMode = urlParams.get('mode') || '4';
+
+let isAIMode = (selectedMode === 'ai');
+let turnList = ["RED", "YELLOW"];
+
+if (selectedMode === '3') turnList = ["RED", "GREEN", "YELLOW"];
+else if (selectedMode === '4') turnList = ["RED", "GREEN", "YELLOW", "BLUE"];
+else if (selectedMode === 'ai' || selectedMode === '2') turnList = ["RED", "YELLOW"];
+
+const SAFE_INDEXES = [0, 8, 13, 21, 26, 34, 39, 47];
+
+// --- 2. THREE.JS 3D SCENE & RESPONSIVE MOBILE CAMERA ---
+const scene = new THREE.Scene();
+const isMobileDevice = window.innerHeight > window.innerWidth;
+const initialFov = isMobileDevice ? 56 : 38;
+
+const camera = new THREE.PerspectiveCamera(initialFov, window.innerWidth / window.innerHeight, 0.1, 1000);
+if (isMobileDevice) {
+    camera.position.set(0, 36, 26);
+} else {
+    camera.position.set(0, 27, 21);
+}
+camera.lookAt(0, -0.6, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setClearColor(0x000000, 0);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+const sun = new THREE.DirectionalLight(0xffffff, 0.95);
+sun.position.set(10, 32, 14);
+sun.castShadow = true;
+sun.shadow.mapSize.width = 2048;
+sun.shadow.mapSize.height = 2048;
+sun.shadow.camera.near = 0.5;
+sun.shadow.camera.far = 70;
+sun.shadow.bias = -0.0003;
+scene.add(sun);
+
+// --- 3. BOARD ASSETS ---
+const C_RED    = 0xef4444;
+const C_GREEN  = 0x22c55e;
+const C_YELLOW = 0xeab308;
+const C_BLUE   = 0x3b82f6;
+const C_WHITE  = 0xffffff;
+
+const frame = new THREE.Mesh(
+    new THREE.BoxGeometry(16.2, 0.55, 16.2),
+    new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.45 })
+);
+frame.position.y = -0.32;
+frame.receiveShadow = true;
+scene.add(frame);
+
+const boardPlate = new THREE.Mesh(
+    new THREE.BoxGeometry(15.2, 0.54, 15.2),
+    new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.25 })
+);
+boardPlate.position.y = -0.28;
+boardPlate.receiveShadow = true;
+scene.add(boardPlate);
+
+function makeCorner(cx, cz, colorHex) {
+    const group = new THREE.Group();
+    const box = new THREE.Mesh(
+        new THREE.BoxGeometry(5.8, 0.55, 5.8),
+        new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.25 })
+    );
+    box.position.set(cx, -0.25, cz);
+    box.receiveShadow = true;
+    group.add(box);
+
+    const island = new THREE.Mesh(
+        new THREE.BoxGeometry(4.2, 0.57, 4.2),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 })
+    );
+    island.position.set(cx, -0.24, cz);
+    island.receiveShadow = true;
+    group.add(island);
+
+    const offsets = [[-1.1, -1.1], [1.1, -1.1], [-1.1, 1.1], [1.1, 1.1]];
+    offsets.forEach(off => {
+        const pocket = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.48, 0.48, 0.58, 24),
+            new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3 })
+        );
+        pocket.position.set(cx + off[0], -0.23, cz + off[1]);
+        pocket.receiveShadow = true;
+        group.add(pocket);
+    });
+    scene.add(group);
+}
+makeCorner(-4.4, -4.4, C_RED);
+makeCorner(4.4, -4.4, C_GREEN);
+makeCorner(4.4, 4.4, C_YELLOW);
+makeCorner(-4.4, 4.4, C_BLUE);
+
+function createCenterTriangles() {
+    const triGroup = new THREE.Group();
+    const sz = 1.48;
+
+    function buildTri(p1, p2, p3, colorHex) {
+        const shape = new THREE.Shape();
+        shape.moveTo(p1[0], p1[1]);
+        shape.lineTo(p2[0], p2[1]);
+        shape.lineTo(p3[0], p3[1]);
+        shape.closePath();
+
+        const geom = new THREE.ExtrudeGeometry(shape, { depth: 0.05, bevelEnabled: false });
+        const mesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.2 }));
+        mesh.rotation.x = Math.PI / 2;
+        mesh.position.y = 0.04;
+        mesh.receiveShadow = true;
+        triGroup.add(mesh);
+    }
+
+    buildTri([0, 0], [-sz, -sz], [-sz, sz], C_RED);
+    buildTri([0, 0], [-sz, -sz], [sz, -sz], C_GREEN);
+    buildTri([0, 0], [sz, -sz], [sz, sz], C_YELLOW);
+    buildTri([0, 0], [-sz, sz], [sz, sz], C_BLUE);
+
+    scene.add(triGroup);
+}
+createCenterTriangles();
+
+const cellToCoord = (gx, gz) => [gx - 7, gz - 7];
+const GRID_PATH = [
+    [1, 6], [2, 6], [3, 6], [4, 6], [5, 6],
+    [6, 5], [6, 4], [6, 3], [6, 2], [6, 1], [6, 0],
+    [7, 0], [8, 0],
+    [8, 1], [8, 2], [8, 3], [8, 4], [8, 5],
+    [9, 6], [10, 6], [11, 6], [12, 6], [13, 6], [14, 6],
+    [14, 7], [14, 8],
+    [13, 8], [12, 8], [11, 8], [10, 8], [9, 8],
+    [8, 9], [8, 10], [8, 11], [8, 12], [8, 13], [8, 14],
+    [7, 14], [6, 14],
+    [6, 13], [6, 12], [6, 11], [6, 10], [6, 9],
+    [5, 8], [4, 8], [3, 8], [2, 8], [1, 8], [0, 8],
+    [0, 7], [0, 6]
+];
+const TRACK = GRID_PATH.map(g => cellToCoord(g[0], g[1]));
+
+const HOME_RUNS = {
+    RED:    [[1,7], [2,7], [3,7], [4,7], [5,7]].map(g => cellToCoord(g[0], g[1])),
+    GREEN:  [[7,1], [7,2], [7,3], [7,4], [7,5]].map(g => cellToCoord(g[0], g[1])),
+    YELLOW: [[13,7], [12,7], [11,7], [10,7], [9,7]].map(g => cellToCoord(g[0], g[1])),
+    BLUE:   [[7,13], [7,12], [7,11], [7,10], [7,9]].map(g => cellToCoord(g[0], g[1]))
+};
+
+const HOME_SLOTS = {
+    RED:    [ [-0.9, -0.3], [-0.5, -0.3], [-0.9, 0.3], [-0.5, 0.3] ],
+    GREEN:  [ [-0.3, -0.9], [ 0.3, -0.9], [-0.3, -0.5], [ 0.3, -0.5] ],
+    YELLOW: [ [ 0.5, -0.3], [ 0.9, -0.3], [ 0.5, 0.3], [ 0.9, 0.3] ],
+    BLUE:   [ [-0.3,  0.5], [ 0.3,  0.5], [-0.3,  0.9], [ 0.3,  0.9] ]
+};
+
+const tileGeo = new THREE.BoxGeometry(0.96, 0.56, 0.96);
+const tileEdgesGeo = new THREE.EdgesGeometry(tileGeo);
+const edgeLineMat = new THREE.LineBasicMaterial({ color: 0xd1d5db, linewidth: 1 });
+
+function renderTile(pos, colorHex) {
+    const tile = new THREE.Mesh(tileGeo, new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.25 }));
+    tile.position.set(pos[0], -0.24, pos[1]);
+    tile.receiveShadow = true;
+    const edges = new THREE.LineSegments(tileEdgesGeo, edgeLineMat);
+    tile.add(edges);
+    scene.add(tile);
+}
+
+TRACK.forEach((pos, idx) => {
+    let col = C_WHITE;
+    if (idx === 0) col = C_RED;
+    else if (idx === 13) col = C_GREEN;
+    else if (idx === 26) col = C_YELLOW;
+    else if (idx === 39) col = C_BLUE;
+    else if (SAFE_INDEXES.includes(idx)) col = 0xfef08a;
+    renderTile(pos, col);
+});
+HOME_RUNS.RED.forEach(p => renderTile(p, C_RED));
+HOME_RUNS.GREEN.forEach(p => renderTile(p, C_GREEN));
+HOME_RUNS.YELLOW.forEach(p => renderTile(p, C_YELLOW));
+HOME_RUNS.BLUE.forEach(p => renderTile(p, C_BLUE));
+
+// --- 4. TOKENS SETUP ---
+const TEAMS = {
+    RED:    { hex: C_RED,    startIdx: 0,  homeBase: [-4.4, -4.4] },
+    GREEN:  { hex: C_GREEN,  startIdx: 13, homeBase: [4.4, -4.4] },
+    YELLOW: { hex: C_YELLOW, startIdx: 26, homeBase: [4.4, 4.4] },
+    BLUE:   { hex: C_BLUE,   startIdx: 39, homeBase: [-4.4, 4.4] }
+};
+
+const offsets = [[-1.1, -1.1], [1.1, -1.1], [-1.1, 1.1], [1.1, 1.1]];
+const allPawns = [];
+const clickableMeshes = [];
+
+turnList.forEach(tName => {
+    const tData = TEAMS[tName];
+    for (let i = 0; i < 4; i++) {
+        const group = new THREE.Group();
+        const mat = new THREE.MeshStandardMaterial({
+            color: tData.hex, roughness: 0.1, metalness: 0.35, clearcoat: 0.9
+        });
+
+        const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.38, 0.2, 24), mat);
+        skirt.position.y = 0.1;
+        skirt.castShadow = true;
+        group.add(skirt);
+
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.26, 0.58, 24), mat);
+        body.position.y = 0.48;
+        body.castShadow = true;
+        group.add(body);
+
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 24, 24), mat);
+        head.position.y = 0.88;
+        head.castShadow = true;
+        group.add(head);
+
+        const bx = tData.homeBase[0] + offsets[i][0];
+        const bz = tData.homeBase[1] + offsets[i][1];
+        group.position.set(bx, 0.05, bz);
+        scene.add(group);
+
+        const pawnObj = {
+            team: tName,
+            id: i,
+            group: group,
+            baseCoord: [bx, bz],
+            state: "BASE",
+            trackIdx: -1,
+            stepCount: 0
+        };
+
+        skirt.userData = pawnObj;
+        body.userData = pawnObj;
+        head.userData = pawnObj;
+        clickableMeshes.push(skirt, body, head);
+
+        allPawns.push(pawnObj);
+    }
+});
+
+function getPawnCoordinate(pawn, steps) {
+    if (steps <= 50) {
+        const actualTrackIdx = (TEAMS[pawn.team].startIdx + steps) % 52;
+        return { coord: TRACK[actualTrackIdx], trackIdx: actualTrackIdx, inHome: false, finished: false };
+    } else if (steps >= 51 && steps <= 55) {
+        const laneIdx = steps - 51;
+        return { coord: HOME_RUNS[pawn.team][laneIdx], trackIdx: -1, inHome: true, finished: false };
+    } else {
+        const finishedAlready = allPawns.filter(p => p.team === pawn.team && p.state === "FINISHED" && p !== pawn).length;
+        const slot = HOME_SLOTS[pawn.team][Math.min(finishedAlready, 3)];
+        return { coord: slot, trackIdx: -1, inHome: true, finished: true };
+    }
+}
+
+function rearrangeTileTokens(trackIdx) {
+    if (trackIdx === -1) return;
+    const tokensOnTile = allPawns.filter(p => p.state === "TRACK" && p.trackIdx === trackIdx);
+    const count = tokensOnTile.length;
+    if (count === 0) return;
+
+    const basePos = TRACK[trackIdx];
+    const offsetMap = {
+        1: [[0, 0]],
+        2: [[-0.2, -0.2], [0.2, 0.2]],
+        3: [[-0.22, -0.22], [0.22, -0.22], [0, 0.22]],
+        4: [[-0.22, -0.22], [0.22, -0.22], [-0.22, 0.22], [0.22, 0.22]]
+    };
+
+    const currentOffsets = offsetMap[Math.min(count, 4)];
+    const targetScale = count > 1 ? 0.85 : 1.0;
+
+    tokensOnTile.forEach((p, idx) => {
+        const off = currentOffsets[idx % currentOffsets.length];
+        new TWEEN.Tween(p.group.position)
+            .to({ x: basePos[0] + off[0], z: basePos[1] + off[1] }, 150)
+            .start();
+
+        new TWEEN.Tween(p.group.scale)
+            .to({ x: targetScale, y: targetScale, z: targetScale }, 150)
+            .start();
+    });
+}
+
+// --- 5. CELEBRATIONS ---
+const activeParticles = [];
+function spawnHomeSparkBurst(pos, hexColor) {
+    const pCount = 35;
+    const geom = new THREE.SphereGeometry(0.06, 8, 8);
+    const mat = new THREE.MeshBasicMaterial({ color: hexColor });
+
+    for (let i = 0; i < pCount; i++) {
+        const mesh = new THREE.Mesh(geom, mat);
+        mesh.position.set(pos[0], 0.4, pos[1]);
+        scene.add(mesh);
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 0.08 + Math.random() * 0.12;
+        activeParticles.push({
+            mesh: mesh,
+            vx: Math.cos(angle) * speed,
+            vy: 0.12 + Math.random() * 0.15,
+            vz: Math.sin(angle) * speed,
+            life: 1.0
+        });
+    }
+}
+
+const fwCanvas = document.getElementById('fireworks-canvas');
+const fwCtx = fwCanvas.getContext('2d');
+let fwActive = false;
+let fwParticles = [];
+
+function resizeFwCanvas() {
+    fwCanvas.width = window.innerWidth;
+    fwCanvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeFwCanvas);
+resizeFwCanvas();
+
+function triggerWinnerCelebration(winnerTeam) {
+    localStorage.removeItem(MATCH_STATE_KEY);
+    fwCanvas.style.display = 'block';
+    const banner = document.getElementById('winner-banner');
+
+    playSound(winAudio);
+
+    // 🚀 SHOW INTERSTITIAL AD ON MATCH COMPLETION
+    setTimeout(triggerGameOverAd, 1200);
+
+    let subTextHtml = `Champion of 3D Ludo Arena!`;
+
+    if (winnerTeam === "RED") {
+        try {
+            let saved = localStorage.getItem(PROFILE_KEY);
+            let profileData = saved ? JSON.parse(saved) : { name: "Shankii", coins: 150, level: 1, xp: 45 };
+
+            profileData.coins = Number(profileData.coins || 0) + 150;
+            
+            let curXp = Number(profileData.xp || 45) + 25;
+            let curLvl = Number(profileData.level || 1);
+            if (curXp >= 100) {
+                curLvl += 1;
+                curXp = curXp - 100;
+            }
+            profileData.xp = curXp;
+            profileData.level = curLvl;
+
+            localStorage.setItem(PROFILE_KEY, JSON.stringify(profileData));
+            subTextHtml = `Champion of 3D Ludo Arena!<br><span style="color:#facc15; font-size:19px; font-weight:800;">🪙 +150 Coins Credited!</span><br><small style="color:#94a3b8; font-size:12px;">(50 Entry Refund + 100 Prize)</small>`;
+        } catch(e) {
+            console.error("Coin Reward error:", e);
+        }
+    } else {
+        subTextHtml = `Better luck next time!<br><span style="color:#ef4444; font-size:16px; font-weight:700;">Computer won the round.</span>`;
+    }
+
+    document.getElementById('winner-title').innerText = `🏆 ${winnerTeam} WINS! 🏆`;
+    document.getElementById('winner-sub').innerHTML = subTextHtml;
+    banner.style.display = 'block';
+    setTimeout(() => { banner.style.transform = 'translate(-50%, -50%) scale(1)'; }, 10);
+
+    fwActive = true;
+    fwParticles = [];
+
+    const interval = setInterval(() => {
+        if (!fwActive) return;
+        createFireworkRocket();
+    }, 280);
+
+    setTimeout(() => {
+        fwActive = false;
+        clearInterval(interval);
+        setTimeout(() => {
+            fwCanvas.style.display = 'none';
+        }, 800);
+    }, 7000);
+}
+
+function createFireworkRocket() {
+    const x = Math.random() * window.innerWidth;
+    const y = 80 + Math.random() * (window.innerHeight * 0.55);
+    const colors = ['#ef4444', '#10b981', '#f59e0b', '#3b82f6', '#f43f5e', '#a855f7', '#fbbf24'];
+    const col = colors[Math.floor(Math.random() * colors.length)];
+
+    for (let i = 0; i < 40; i++) {
+        const angle = (Math.PI * 2 / 40) * i + Math.random() * 0.2;
+        const spd = 2 + Math.random() * 5;
+        fwParticles.push({
+            x: x, y: y,
+            vx: Math.cos(angle) * spd,
+            vy: Math.sin(angle) * spd,
+            alpha: 1,
+            color: col
+        });
+    }
+}
+
+function updateFireworks() {
+    if (!fwActive && fwParticles.length === 0) return;
+    fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+
+    for (let i = fwParticles.length - 1; i >= 0; i--) {
+        const p = fwParticles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.08;
+        p.alpha -= 0.016;
+
+        if (p.alpha <= 0) {
+            fwParticles.splice(i, 1);
+            continue;
+        }
+
+        fwCtx.save();
+        fwCtx.globalAlpha = p.alpha;
+        fwCtx.fillStyle = p.color;
+        fwCtx.shadowBlur = 10;
+        fwCtx.shadowColor = p.color;
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        fwCtx.fill();
+        fwCtx.restore();
+    }
+}
+
+// --- 6. AUTO-SAVE & RESUME ENGINE ---
+function saveCurrentMatchState() {
+    try {
+        const stateData = {
+            mode: selectedMode,
+            currentTurn: currentTurn,
+            pawns: allPawns.map(p => ({
+                team: p.team,
+                id: p.id,
+                state: p.state,
+                trackIdx: p.trackIdx,
+                stepCount: p.stepCount
+            }))
+        };
+        localStorage.setItem(MATCH_STATE_KEY, JSON.stringify(stateData));
+    } catch(e) {}
+}
+
+function restoreMatchState() {
+    try {
+        const raw = localStorage.getItem(MATCH_STATE_KEY);
+        if (!raw) return false;
+        const saved = JSON.parse(raw);
+        if (saved.mode !== selectedMode) return false;
+
+        saved.pawns.forEach(sp => {
+            const pawn = allPawns.find(p => p.team === sp.team && p.id === sp.id);
+            if (!pawn) return;
+            pawn.state = sp.state;
+            pawn.trackIdx = sp.trackIdx;
+            pawn.stepCount = sp.stepCount;
+
+            if (pawn.state === "BASE") {
+                pawn.group.position.set(pawn.baseCoord[0], 0.05, pawn.baseCoord[1]);
+            } else if (pawn.state === "TRACK" || pawn.state === "HOME_LANE") {
+                const info = getPawnCoordinate(pawn, pawn.stepCount);
+                pawn.group.position.set(info.coord[0], 0.05, info.coord[1]);
+            } else if (pawn.state === "FINISHED") {
+                const finishedIdx = allPawns.filter(o => o.team === pawn.team && o.state === "FINISHED" && o.id <= pawn.id).length - 1;
+                const slot = HOME_SLOTS[pawn.team][Math.max(0, Math.min(finishedIdx, 3))];
+                pawn.group.position.set(slot[0], 0.05, slot[1]);
+            }
+        });
+
+        currentTurn = saved.currentTurn || 0;
+        for (let i = 0; i < 52; i++) rearrangeTileTokens(i);
+        return true;
+    } catch(e) {
+        return false;
+    }
+}
+
+function exitToDashboard() {
+    playSound(clickAudio);
+    saveCurrentMatchState();
+    window.location.href = 'index.html';
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        saveCurrentMatchState();
+    }
+});
+
+// --- 7. SMART COMPUTER (BOT) ENGINE ---
+function isTokenUnderImmediateThreat(pawn) {
+    if (pawn.state !== "TRACK" || SAFE_INDEXES.includes(pawn.trackIdx)) return false;
+    const enemies = allPawns.filter(o => o.team !== pawn.team && o.state === "TRACK");
+    for (let enemy of enemies) {
+        const dist = (pawn.trackIdx - enemy.trackIdx + 52) % 52;
+        if (dist >= 1 && dist <= 6) return true;
+    }
+    return false;
+}
+
+function evaluateBotMoveScore(pawn, roll) {
+    let score = 0;
+    const nextSteps = pawn.stepCount + roll;
+
+    if (nextSteps === 56) return 10000;
+
+    if (pawn.state === "BASE" && roll === 6) {
+        const startTile = TEAMS[pawn.team].startIdx;
+        const enemyOnStart = allPawns.find(o => o.team !== pawn.team && o.state === "TRACK" && o.trackIdx === startTile);
+        if (enemyOnStart && !SAFE_INDEXES.includes(startTile)) return 8500;
+        return 5000;
+    }
+
+    if (pawn.state === "TRACK") {
+        const targetTrackIdx = (TEAMS[pawn.team].startIdx + nextSteps) % 52;
+        if (nextSteps <= 50 && !SAFE_INDEXES.includes(targetTrackIdx)) {
+            const enemy = allPawns.find(o => o.team !== pawn.team && o.state === "TRACK" && o.trackIdx === targetTrackIdx);
+            if (enemy) return 9000;
+        }
+    }
+
+    if (isTokenUnderImmediateThreat(pawn)) {
+        score += 3500;
+        const destIdx = (TEAMS[pawn.team].startIdx + nextSteps) % 52;
+        if (SAFE_INDEXES.includes(destIdx) || nextSteps >= 51) score += 2500;
+    }
+
+    if (nextSteps >= 51 && pawn.stepCount < 51) score += 4000;
+    if (pawn.state === "HOME_LANE") score += 3000 + nextSteps;
+
+    score += (nextSteps * 15);
+    return score;
+}
+
+function pickBestBotMove(validPawns, roll) {
+    let bestPawn = validPawns[0];
+    let maxScore = -999999;
+
+    validPawns.forEach(pawn => {
+        const score = evaluateBotMoveScore(pawn, roll);
+        if (score > maxScore) {
+            maxScore = score;
+            bestPawn = pawn;
+        }
+    });
+
+    return bestPawn;
+}
+
+// --- 8. GAME CONTROLS & LOOP ---
+let currentTurn = 0;
+let rolledNumber = 0;
+let canPickToken = false;
+let isTokenMoving = false;
+
+const rollBtn = document.getElementById('roll-btn');
+const msgEl = document.getElementById('msg');
+const turnTxt = document.getElementById('turn-txt');
+const turnDot = document.getElementById('turn-dot');
+const diceResult = document.getElementById('dice-result');
+const uiBar = document.getElementById('ui-bar');
+const exitHomeBtn = document.getElementById('exit-home-btn');
+
+const ludoDice = new LudoDice(scene, (val) => {
+    rolledNumber = val;
+    diceResult.innerText = `Dice: ${rolledNumber}`;
+
+    if (rolledNumber === 6) playSound(sixAudio);
+
+    const currentTeam = turnList[currentTurn];
+    const isBot = (isAIMode && currentTeam === "YELLOW");
+    const playerTokens = allPawns.filter(p => p.team === currentTeam);
+    const validPawns = playerTokens.filter(p => canPawnMove(p, rolledNumber));
+
+    if (validPawns.length === 0) {
+        msgEl.innerText = `Rolled ${rolledNumber}. Pass!`;
+        setTimeout(() => passTurn(false), 350);
+    } else {
+        if (isBot) {
+            msgEl.innerText = (rolledNumber === 6) ? `🤖 YEAH BOI! Bot rolled 6!` : `🤖 Bot rolled ${rolledNumber}! Thinking...`;
+            setTimeout(() => {
+                const bestPawn = pickBestBotMove(validPawns, rolledNumber);
+                handleMove(bestPawn);
+            }, 550);
+        } else {
+            if (validPawns.length === 1) {
+                msgEl.innerText = (rolledNumber === 6) ? `🎉 YEAH BOI! 6 Aaya! Moving...` : `Moving... (${rolledNumber})`;
+                setTimeout(() => {
+                    handleMove(validPawns[0]);
+                }, 350);
+            } else {
+                msgEl.innerText = (rolledNumber === 6) ? `🎉 YEAH BOI! 6 Aaya! Gitti chuno.` : `Rolled ${rolledNumber}! Gitti chuno.`;
+                canPickToken = true;
+            }
+        }
+    }
+});
+
+function updateTurnDisplay(team, isBonus) {
+    const isBot = (isAIMode && team === "YELLOW");
+    const teamHexStr = '#' + TEAMS[team].hex.toString(16).padStart(6, '0');
+
+    uiBar.className = '';
+    if (team === "RED") uiBar.classList.add('pos-red');
+    else if (team === "GREEN") uiBar.classList.add('pos-green');
+    else if (team === "YELLOW") uiBar.classList.add('pos-yellow');
+    else if (team === "BLUE") uiBar.classList.add('pos-blue');
+
+    exitHomeBtn.style.borderColor = teamHexStr;
+    exitHomeBtn.style.color = teamHexStr;
+    exitHomeBtn.style.boxShadow = `0 8px 24px ${teamHexStr}44`;
+
+    turnTxt.innerText = isBot ? "BOT (YELLOW)" : team;
+    turnDot.style.background = teamHexStr;
+    rollBtn.style.background = teamHexStr;
+
+    if (isBot) {
+        rollBtn.disabled = true;
+        msgEl.innerText = isBonus ? "🤖 Bot got Bonus Roll!" : "🤖 Bot rolling dice...";
+        setTimeout(() => {
+            if (turnList[currentTurn] === "YELLOW" && !ludoDice.isRolling) {
+                ludoDice.roll("YELLOW");
+            }
+        }, 750);
+    } else {
+        rollBtn.disabled = false;
+        msgEl.innerText = isBonus ? "🎉 Bonus Turn! Roll karo!" : `Turn: ${team} • Roll karo!`;
+    }
+}
+
+function canPawnMove(pawn, roll) {
+    if (pawn.state === "FINISHED") return false;
+    if (pawn.state === "BASE") return roll === 6;
+    return (pawn.stepCount + roll) <= 56;
+}
+
+function triggerRoll() {
+    playSound(clickAudio);
+    const currentTeam = turnList[currentTurn];
+    if (isAIMode && currentTeam === "YELLOW") return;
+    if (ludoDice.isRolling || canPickToken || isTokenMoving) return;
+
+    rollBtn.disabled = true;
+    diceResult.innerText = "Rolling...";
+    msgEl.innerText = "Rolling dice...";
+    ludoDice.roll(currentTeam);
+}
+
+rollBtn.addEventListener('click', triggerRoll);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener('pointerdown', (e) => {
+    if (!canPickToken || isTokenMoving) return;
+    const currentTeam = turnList[currentTurn];
+    if (isAIMode && currentTeam === "YELLOW") return;
+
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+
+    const hits = raycaster.intersectObjects(clickableMeshes);
+    if (hits.length > 0) {
+        const selected = hits[0].object.userData;
+        if (selected && selected.team === currentTeam) {
+            if (selected.state === "BASE" && rolledNumber !== 6) {
+                msgEl.innerText = "Base se nikalne ke liye 6 chahiye!";
+                return;
+            }
+            if (!canPawnMove(selected, rolledNumber)) {
+                msgEl.innerText = "Ghar jane ke liye exact number chahiye!";
+                return;
+            }
+            playSound(clickAudio);
+            canPickToken = false;
+            handleMove(selected);
+        }
+    }
+});
+
+function handleMove(pawn) {
+    isTokenMoving = true;
+    canPickToken = false;
+    rollBtn.disabled = true;
+    const oldTrackIdx = pawn.trackIdx;
+
+    if (pawn.state === "BASE" && rolledNumber === 6) {
+        pawn.state = "TRACK";
+        pawn.stepCount = 0;
+        pawn.trackIdx = TEAMS[pawn.team].startIdx;
+        const startC = TRACK[pawn.trackIdx];
+
+        playSound(stepAudio);
+
+        new TWEEN.Tween(pawn.group.position)
+            .to({ x: startC[0], z: startC[1], y: 0.05 }, 250)
+            .easing(TWEEN.Easing.Back.Out)
+            .onComplete(() => {
+                checkCut(pawn);
+                rearrangeTileTokens(pawn.trackIdx);
+                isTokenMoving = false;
+                saveCurrentMatchState();
+                passTurn(true);
+            })
+            .start();
+        return;
+    }
+
+    let hops = rolledNumber;
+    function hopStep() {
+        if (hops <= 0) {
+            let gotBonus = (rolledNumber === 6);
+
+            if (pawn.stepCount === 56) {
+                pawn.state = "FINISHED";
+                pawn.trackIdx = -1;
+                gotBonus = true;
+
+                const finishedCount = allPawns.filter(p => p.team === pawn.team && p.state === "FINISHED").length;
+                const slot = HOME_SLOTS[pawn.team][Math.min(finishedCount - 1, 3)];
+                new TWEEN.Tween(pawn.group.position)
+                    .to({ x: slot[0], z: slot[1] }, 100)
+                    .start();
+
+                spawnHomeSparkBurst(slot, TEAMS[pawn.team].hex);
+
+                if (finishedCount === 4) {
+                    triggerWinnerCelebration(pawn.team);
+                    return;
+                } else {
+                    playSound(niceAudio);
+                    msgEl.innerText = `✨ NICE! ${pawn.team} ka token Home pahuch gaya! Bonus Turn!`;
+                }
+            } else if (pawn.stepCount >= 51) {
+                pawn.state = "HOME_LANE";
+                pawn.trackIdx = -1;
+            } else {
+                pawn.state = "TRACK";
+                const didCut = checkCut(pawn);
+                if (didCut) gotBonus = true;
+            }
+
+            rearrangeTileTokens(oldTrackIdx);
+            if (pawn.trackIdx !== -1) rearrangeTileTokens(pawn.trackIdx);
+
+            isTokenMoving = false;
+            saveCurrentMatchState();
+            passTurn(gotBonus);
+            return;
+        }
+
+        pawn.stepCount++;
+        hops--;
+
+        playSound(stepAudio);
+
+        const nextInfo = getPawnCoordinate(pawn, pawn.stepCount);
+        pawn.trackIdx = nextInfo.trackIdx;
+        const target = nextInfo.coord;
+
+        new TWEEN.Tween(pawn.group.position)
+            .to({ x: target[0], z: target[1] }, 130)
+            .start();
+
+        new TWEEN.Tween(pawn.group.position)
+            .to({ y: 1.1 }, 65)
+            .easing(TWEEN.Easing.Quadratic.Out)
+            .chain(
+                new TWEEN.Tween(pawn.group.position)
+                    .to({ y: 0.05 }, 65)
+                    .easing(TWEEN.Easing.Quadratic.In)
+                    .onComplete(hopStep)
+            )
+            .start();
+    }
+    hopStep();
+}
+
+function checkCut(activePawn) {
+    if (activePawn.trackIdx === -1) return false;
+    if (SAFE_INDEXES.includes(activePawn.trackIdx)) return false;
+
+    let hasCut = false;
+    allPawns.forEach(other => {
+        if (other !== activePawn && other.team !== activePawn.team && other.state === "TRACK" && other.trackIdx === activePawn.trackIdx) {
+            playSound(cutAudio);
+            msgEl.innerText = `💥 ${activePawn.team} ne ${other.team} ko kaat diya! Bonus Turn!`;
+            other.state = "BASE";
+            other.trackIdx = -1;
+            other.stepCount = 0;
+            other.group.scale.set(1.0, 1.0, 1.0);
+            new TWEEN.Tween(other.group.position)
+                .to({ x: other.baseCoord[0], z: other.baseCoord[1], y: 0.05 }, 300)
+                .easing(TWEEN.Easing.Back.Out)
+                .start();
+            hasCut = true;
+        }
+    });
+
+    return hasCut;
+}
+
+function passTurn(extraRoll) {
+    if (!extraRoll) {
+        currentTurn = (currentTurn + 1) % turnList.length;
+    }
+    const team = turnList[currentTurn];
+    updateTurnDisplay(team, extraRoll);
+    ludoDice.moveToTeam(team);
+    saveCurrentMatchState();
+}
+
+window.addEventListener('resize', () => {
+    const isPortrait = window.innerHeight > window.innerWidth;
+    camera.fov = isPortrait ? 56 : 38;
+    camera.aspect = window.innerWidth / window.innerHeight;
+    if (isPortrait) {
+        camera.position.set(0, 36, 26);
+    } else {
+        camera.position.set(0, 27, 21);
+    }
+    camera.lookAt(0, -0.6, 0);
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+function animate(time) {
+    requestAnimationFrame(animate);
+    TWEEN.update(time);
+
+    for (let i = activeParticles.length - 1; i >= 0; i--) {
+        const p = activeParticles[i];
+        p.mesh.position.x += p.vx;
+        p.mesh.position.y += p.vy;
+        p.mesh.position.z += p.vz;
+        p.vy -= 0.007;
+        p.life -= 0.025;
+        p.mesh.scale.setScalar(p.life);
+        if (p.life <= 0) {
+            scene.remove(p.mesh);
+            activeParticles.splice(i, 1);
+        }
+    }
+
+    updateFireworks();
+    renderer.render(scene, camera);
+}
+animate();
+
+// Event triggers for Banner & Interstitial Preload
+window.addEventListener('load', () => {
+    setTimeout(initAdMobBanner, 1000);
+    setTimeout(preloadGameOverInterstitial, 3000);
+});
+document.addEventListener('deviceready', () => {
+    initAdMobBanner();
+    preloadGameOverInterstitial();
+});
+
+// Initialize or Restore
+const wasRestored = restoreMatchState();
+const activeTeam = turnList[currentTurn];
+ludoDice.moveToTeam(activeTeam);
+updateTurnDisplay(activeTeam, false);
+if (wasRestored) {
+    msgEl.innerText = "Match Resumed! Turn: " + activeTeam;
+}
+</script>
+
+<!-- BOTTOM GAMEPLAY BANNER AD -->
+<div id="game-bottom-banner" onclick="openBannerAd()" style="
+    position: fixed;
+    bottom: 12px;
+    left: 85px;
+    right: 15px;
+    height: 52px;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+    border: 1px solid rgba(250, 204, 21, 0.4);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    cursor: pointer;
+    user-select: none;">
+    
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 20px;">🎁</span>
+        <div style="display: flex; flex-direction: column;">
+            <span style="color: #facc15; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;">BONUS REWARD</span>
+            <span style="color: #94a3b8; font-size: 10px;">Tap to claim free perks</span>
+        </div>
+    </div>
+    
+    <div style="
+        background: #facc15;
+        color: #0f172a;
+        font-size: 11px;
+        font-weight: 800;
+        padding: 5px 10px;
+        border-radius: 6px;
+        letter-spacing: 0.5px;">
+        CLAIM
+    </div>
+</div>
+
+<script>
+function openBannerAd() {
+    const bannerUrl = "https://uplcm.com/4/12236000";
+    window.open(bannerUrl, '_blank');
+}
+</script>
+
+
+</body>
+</html>
