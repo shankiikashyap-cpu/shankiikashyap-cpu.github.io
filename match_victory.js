@@ -80,7 +80,7 @@
         `;
         document.body.appendChild(vicModal);
 
-        // 2. FULL SCREEN MOBILE VIDEO AD EXPERIENCE
+        // 2. FULL SCREEN MOBILE VIDEO AD STAGE
         const adScreen = document.createElement('div');
         adScreen.id = 'victory-exit-ad-screen';
         adScreen.style.cssText = `
@@ -101,39 +101,44 @@
         adScreen.innerHTML = `
             <!-- FLOATING TOP BAR -->
             <div style="position: absolute; top: 12px; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; box-sizing: border-box; z-index: 100;">
-                <div style="background: rgba(0, 0, 0, 0.65); border: 1px solid rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; color: #e2e8f0; backdrop-filter: blur(4px);">
+                <div style="background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255,255,255,0.25); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; color: #e2e8f0; backdrop-filter: blur(4px);">
                     SPONSORED VIDEO
                 </div>
-                <div id="vic-exit-count-badge" style="background: rgba(0, 0, 0, 0.7); border: 1.5px solid #facc15; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; color: #facc15; backdrop-filter: blur(4px);">
+                <div id="vic-exit-count-badge" style="background: rgba(0, 0, 0, 0.75); border: 1.5px solid #facc15; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; color: #facc15; backdrop-filter: blur(4px);">
                     Reward in: <span id="vic-exit-count" style="color: #38bdf8;">5</span>s
                 </div>
                 <button id="vic-ad-cross" type="button" style="display: none; width: 36px; height: 36px; border-radius: 50%; background: #ef4444; color: #fff; border: 2px solid #fff; font-size: 18px; font-weight: 900; cursor: pointer; align-items: center; justify-content: center; box-shadow: 0 0 16px rgba(239, 68, 68, 0.9);">✕</button>
             </div>
 
-            <!-- FULL SCREEN VIDEO AD BACKGROUND -->
+            <!-- FULL SCREEN VIDEO WRAPPER -->
             <div id="ad-video-wrapper" style="width: 100vw; height: 100vh; position: absolute; top:0; left:0; display: flex; align-items: center; justify-content: center; background: #000; cursor: pointer;">
-                <video id="vic-video-player" autoplay playsinline muted loop style="width: 100%; height: 100%; object-fit: cover;">
-                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+                <video id="vic-video-player" playsinline webkit-playsinline autoplay muted loop preload="auto" style="width: 100%; height: 100%; object-fit: cover;">
+                    <source src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4">
                 </video>
-                <!-- OVERLAY CLICK TO CONVERT (High CPM) -->
-                <div style="position: absolute; bottom: 85px; background: rgba(15, 23, 42, 0.85); border: 1.5px solid #38bdf8; padding: 8px 18px; border-radius: 25px; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.5);">
-                    <span>🛍️ Tap to Open Exclusive Deals</span>
+                
+                <!-- TAP TO INSTALL / VIEW DEALS OVERLAY -->
+                <div id="ad-tap-overlay" style="position: absolute; bottom: 85px; background: rgba(15, 23, 42, 0.9); border: 1.5px solid #38bdf8; padding: 10px 20px; border-radius: 25px; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.6); pointer-events: none;">
+                    <span>🛍️ Tap to Open Partner Deals</span>
                 </div>
             </div>
 
             <!-- BOTTOM SKIP / CONTINUE -->
             <div style="position: absolute; bottom: 16px; width: 100%; max-width: 320px; z-index: 100;">
-                <button id="vic-continue-btn" type="button" disabled style="background: rgba(30, 41, 59, 0.9); color: #94a3b8; border: 1px solid #475569; padding: 12px; font-size: 14px; font-weight: 800; border-radius: 14px; width: 100%; cursor: not-allowed; backdrop-filter: blur(6px);">
+                <button id="vic-continue-btn" type="button" disabled style="background: rgba(30, 41, 59, 0.92); color: #94a3b8; border: 1px solid #475569; padding: 12px; font-size: 14px; font-weight: 800; border-radius: 14px; width: 100%; cursor: not-allowed; backdrop-filter: blur(6px);">
                     ⏳ Video Playing (5s)...
                 </button>
             </div>
         `;
         document.body.appendChild(adScreen);
 
+        // Bindings
         document.getElementById('vic-home-trigger-btn').addEventListener('click', triggerFullScreenAd);
+        
+        // Video screen tap se Smartlink open hoga
         document.getElementById('ad-video-wrapper').addEventListener('click', () => {
             window.open(SMARTLINK_URL, '_blank');
         });
+
         document.getElementById('vic-ad-cross').addEventListener('click', goHome);
         document.getElementById('vic-continue-btn').addEventListener('click', goHome);
     }
@@ -150,15 +155,24 @@
         adScreen.style.display = 'flex';
         exitTimeLeft = 5;
 
+        // Force Video Playback
         if (video) {
+            video.muted = true;
             video.currentTime = 0;
-            video.play().catch(() => {});
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    // Fallback agar auto-play restrict ho
+                    video.muted = true;
+                    video.play();
+                });
+            }
         }
 
         crossBtn.style.display = 'none';
         countBadge.style.display = 'block';
         contBtn.disabled = true;
-        contBtn.style.background = 'rgba(30, 41, 59, 0.9)';
+        contBtn.style.background = 'rgba(30, 41, 59, 0.92)';
         contBtn.style.color = '#94a3b8';
         contBtn.style.cursor = 'not-allowed';
         contBtn.innerText = '⏳ Video Playing (5s)...';
