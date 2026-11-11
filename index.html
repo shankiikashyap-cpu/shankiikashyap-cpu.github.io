@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>3D Ludo Arena - Main Home</title>
+    
+<meta name="monetag" content="2346e206bb2f7846f16fb9a56e4b2d40">
+
+    <script src="ads.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            background: radial-gradient(circle at center, #1e3a8a 0%, #09132e 65%, #030712 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            overflow-x: hidden;
+            padding: 10px 12px 18px 12px;
+        }
+
+        .top-global-header {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.92);
+            padding: 8px 10px;
+            border-radius: 20px;
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            z-index: 20;
+        }
+
+        .profile-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .avatar-wrap {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+        }
+
+        .avatar-img {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            border: 2px solid #f59e0b;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+            background: linear-gradient(135deg, #0284c7, #1e40af);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .lvl-badge {
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            font-size: 8px;
+            font-weight: 900;
+            padding: 1px 5px;
+            border-radius: 8px;
+            border: 1px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .player-name-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .player-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: #f8fafc;
+            max-width: 65px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .gear-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .xp-bar-wrap {
+            width: 65px;
+            height: 4px;
+            background: #1e293b;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .xp-bar-fill {
+            height: 100%;
+            width: 45%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            border-radius: 4px;
+        }
+
+        .currency-cluster {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .currency-capsule {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 5px 8px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+
+        .coin-icon {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #fef08a 0%, #eab308 60%, #a16207 100%);
+            border: 1px solid #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: #713f12;
+            font-weight: 900;
+        }
+
+        .gem-icon {
+            font-size: 12px;
+        }
+
+        .btn-free-reward {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            border: 1.5px solid #34d399;
+            padding: 5px 10px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            box-shadow: 0 3px 10px rgba(16, 185, 129, 0.4);
+            white-space: nowrap;
+        }
+        .btn-free-reward:active { transform: scale(0.95); }
+
+        .showcase-stage {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 4px 0;
+        }
+
+        #logo-3d-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            pointer-events: none;
+        }
+
+        .boxes-container {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .mode-card {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            padding: 14px 16px;
+            border-radius: 20px;
+            border: 1.5px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        .mode-card-disabled {
+            background: linear-gradient(180deg, #18202c 0%, #0b111e 100%);
+            border: 1.5px solid rgba(148, 163, 184, 0.2);
+            filter: grayscale(0.85);
+            opacity: 0.85;
+            cursor: not-allowed;
+        }
+
+        .under-process-badge {
+            background: rgba(245, 158, 11, 0.18);
+            border: 1px solid #f59e0b;
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 12px;
+            text-align: center;
+            letter-spacing: 0.8px;
+        }
+
+        .card-header-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-align: center;
+        }
+
+        .main-btn {
+            padding: 12px 16px;
+            font-size: 15px;
+            font-weight: 800;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+        }
+        .main-btn:active { transform: scale(0.98); }
+
+        .btn-friends { background: linear-gradient(135deg, #f59e0b, #ea580c); border: 1.5px solid rgba(255, 255, 255, 0.2); }
+        .btn-vs-bot  { background: linear-gradient(135deg, #6366f1, #a855f7); border: 1.5px solid rgba(255, 255, 255, 0.2); }
+        
+        .btn-disabled {
+            background: #334155 !important;
+            color: #94a3b8 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        .tag {
+            font-size: 11px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* --- MODAL POPUPS --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.88); backdrop-filter: blur(10px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-card {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            padding: 22px 24px;
+            border-radius: 22px;
+            border: 2px solid rgba(255,255,255,0.18);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.85);
+            width: 88%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            text-align: center;
+        }
+
+        .modal-title { font-size: 19px; font-weight: 900; color: #f8fafc; }
+
+        .avatar-picker { display: flex; justify-content: center; gap: 8px; }
+        .avatar-choice {
+            font-size: 26px; width: 46px; height: 46px;
+            display: flex; align-items: center; justify-content: center;
+            background: #334155; border-radius: 12px; cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .avatar-choice.active { border-color: #f59e0b; background: #1e40af; }
+
+        .form-input {
+            padding: 10px 14px; background: #0f172a;
+            border: 1.5px solid #475569; border-radius: 10px;
+            color: #fff; font-size: 14px; font-weight: 700; outline: none; width: 100%;
+        }
+
+        .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+        .btn-modal-save { flex: 1; padding: 11px; background: #10b981; color: #fff; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
+        .btn-modal-close { flex: 1; padding: 11px; background: #475569; color: #fff; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
+
+        /* --- FULL SCREEN REWARDED VIDEO AD STAGE (FALLBACK MODAL) --- */
+        #ad-modal {
+            background: rgba(0, 0, 0, 0.94);
+        }
+
+        .ad-theater {
+            position: relative;
+            background: #020617;
+            border: 2px solid #10b981;
+            padding: 24px 20px;
+            border-radius: 24px;
+            text-align: center;
+            width: 90%;
+            max-width: 330px;
+            box-shadow: 0 0 50px rgba(16, 185, 129, 0.35);
+        }
+
+        .ad-corner-close {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #334155;
+            color: #94a3b8;
+            font-size: 16px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.15);
+            cursor: not-allowed;
+        }
+
+        .ad-corner-close.active {
+            background: #ef4444;
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+        }
+
+        .ad-timer-ring {
+            font-size: 42px;
+            font-weight: 900;
+            color: #10b981;
+            margin: 15px 0 10px 0;
+        }
+
+        /* DAILY CLAIM POPUP */
+        #daily-modal .daily-box {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #facc15;
+            padding: 24px;
+            border-radius: 24px;
+            text-align: center;
+            width: 88%;
+            max-width: 320px;
+            box-shadow: 0 0 40px rgba(250, 204, 21, 0.4);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <!-- TOP HEADER -->
+    <div class="top-global-header">
+        <div class="profile-area" onclick="openProfileModal()">
+            <div class="avatar-wrap">
+                <div class="avatar-img" id="ui-avatar">🧑‍🎤</div>
+                <span class="lvl-badge" id="ui-lvl">Lv.1</span>
+            </div>
+            <div class="player-info">
+                <div class="player-name-row">
+                    <span class="player-name" id="ui-name">Player 1</span>
+                    <button type="button" class="gear-btn" title="Edit Profile">⚙️</button>
+                </div>
+                <div class="xp-bar-wrap">
+                    <div class="xp-bar-fill" id="ui-xp"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="currency-cluster">
+            <div class="currency-capsule" title="Gems">
+                <span class="gem-icon">💎</span>
+                <span id="ui-gems">150</span>
+            </div>
+            <div class="currency-capsule" title="Coins">
+                <span class="coin-icon">C</span>
+                <span id="ui-coins">200</span>
+            </div>
+            <button type="button" class="btn-free-reward" onclick="startWatchingAd()" title="Watch video ad for free coins">
+                <span>+ Free</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 3D LOGO -->
+    <div class="showcase-stage" id="stage-box">
+        <canvas id="logo-3d-canvas"></canvas>
+    </div>
+
+    <!-- MODES -->
+    <div class="boxes-container">
+        <div class="mode-card">
+            <div class="card-header-label">🎮 Offline Modes</div>
+            <button type="button" class="main-btn btn-friends" onclick="startPaidGame('home.html')">
+                <span>👥 Play With Friends</span>
+                <span class="tag"><span class="coin-icon">C</span> -50 Coins</span>
+            </button>
+            <button type="button" class="main-btn btn-vs-bot" onclick="startPaidGame('game.html?mode=ai')">
+                <span>🤖 VS Computer</span>
+                <span class="tag"><span class="coin-icon">C</span> -50 Coins</span>
+            </button>
+        </div>
+
+        <div class="mode-card mode-card-disabled">
+            <div class="card-header-label">🌐 Online Multiplayer</div>
+            <div class="under-process-badge">🔒 Under Process • Coming Next Week</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 2px;">
+                <button type="button" class="main-btn btn-disabled" onclick="showUnderProcessMsg()">
+                    <span>➕ Create Room</span>
+                    <span class="tag">Locked</span>
+                </button>
+                <button type="button" class="main-btn btn-disabled" onclick="showUnderProcessMsg()">
+                    <span>🔗 Join Room</span>
+                    <span class="tag">Locked</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title">Edit Profile</div>
+            <div style="display:flex; flex-direction:column; gap:6px; text-align:left;">
+                <label style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Choose Avatar</label>
+                <div class="avatar-picker">
+                    <div class="avatar-choice" onclick="selectAvatar('🧑‍🎤')">🧑‍🎤</div>
+                    <div class="avatar-choice" onclick="selectAvatar('🥷')">🥷</div>
+                    <div class="avatar-choice" onclick="selectAvatar('👑')">👑</div>
+                    <div class="avatar-choice" onclick="selectAvatar('🦁')">🦁</div>
+                    <div class="avatar-choice" onclick="selectAvatar('🤖')">🤖</div>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:6px; text-align:left;">
+                <label style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Player Name</label>
+                <input type="text" id="edit-player-name" class="form-input" maxlength="12" placeholder="Enter name">
+            </div>
+
+            <div class="modal-btns">
+                <button type="button" class="btn-modal-save" onclick="saveProfileData()">SAVE</button>
+                <button type="button" class="btn-modal-close" onclick="closeProfileModal()">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DAILY LOGIN POPUP -->
+    <div id="daily-modal" class="modal-overlay">
+        <div class="daily-box">
+            <div style="font-size:42px; margin-bottom:6px;">🎁</div>
+            <h2 style="font-size:22px; font-weight:900; color:#facc15; margin-bottom:6px;">Daily Reward!</h2>
+            <p style="font-size:13px; color:#cbd5e1; margin-bottom:18px;">Har roz game open karne par pao muft coins!</p>
+            <div style="background:rgba(0,0,0,0.4); padding:10px; border-radius:14px; border:1px solid #facc15; display:inline-flex; align-items:center; gap:8px; margin-bottom:18px;">
+                <span class="coin-icon" style="width:22px; height:22px; font-size:12px;">C</span>
+                <span style="font-size:20px; font-weight:900; color:#facc15;">+50 Coins</span>
+            </div>
+            <button type="button" class="main-btn" style="background:#10b981; justify-content:center; width:100%; border:none;" onclick="claimDailyReward()">
+                CLAIM 50 COINS 🎉
+            </button>
+        </div>
+    </div>
+
+    <!-- REWARDED VIDEO AD MODAL (FALLBACK ONLY IF AD FAILS) -->
+    <div id="ad-modal" class="modal-overlay">
+        <div class="ad-theater">
+            <div id="corner-x-btn" class="ad-corner-close" onclick="handleAdModalClose()">✕</div>
+            <div style="font-size:32px; margin-bottom:4px;">🎬</div>
+            <h3 style="font-size:18px; font-weight:900; color:#f8fafc;">Reward Video</h3>
+            <p style="font-size:12px; color:#94a3b8; margin-top:2px;">Coins lene ke liye ad dekhein:</p>
+            
+            <div class="ad-timer-ring" id="ad-countdown">5</div>
+            <p style="font-size:12px; color:#facc15; font-weight:800; margin-bottom:18px;">Reward: +100 Coins</p>
+
+            <button id="ad-action-btn" type="button" style="background:#334155; color:#94a3b8; border:none; padding:12px 18px; border-radius:14px; font-size:13px; font-weight:800; width:100%; cursor:not-allowed;" onclick="handleAdModalAction()">
+                Please Wait (5s)...
+            </button>
+        </div>
+    </div>
+
+<script>
+// --- AUDIO FX ---
+const clickAudio = new Audio('click.mp3'); clickAudio.preload = 'auto';
+const niceAudio = new Audio('nice.mp3'); niceAudio.preload = 'auto';
+
+function playClickSound() {
+    try {
+        clickAudio.currentTime = 0;
+        const p = clickAudio.play();
+        if (p !== undefined) p.catch(() => {});
+    } catch(err) {}
+}
+
+document.addEventListener('pointerdown', (e) => {
+    const target = e.target.closest('button, .main-btn, .sub-btn, .avatar-choice, .profile-area, .gear-btn, .btn-free-reward');
+    if (target) {
+        playClickSound();
+    }
+});
+
+function showUnderProcessMsg() {
+    alert("🛠️ Online Multiplayer is currently under process!\nThis feature will be unlocked in next week's update. Stay tuned!");
+}
+
+// 1. THREE.JS 3D LOGO
+(function init3DLogo() {
+    const canvas = document.getElementById('logo-3d-canvas');
+    const container = document.getElementById('stage-box');
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(36, container.clientWidth / container.clientHeight, 0.1, 100);
+    camera.position.set(0, 4.3, 7.8);
+    camera.lookAt(0, 0.25, 0);
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const ambLight = new THREE.AmbientLight(0xffffff, 0.9);
+    scene.add(ambLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.25);
+    dirLight.position.set(6, 12, 7);
+    scene.add(dirLight);
+
+    const blueBackLight = new THREE.PointLight(0x38bdf8, 2, 10);
+    blueBackLight.position.set(-3, 2, -2);
+    scene.add(blueBackLight);
+
+    const logoGroup = new THREE.Group();
+    scene.add(logoGroup);
+
+    const textCanvas = document.createElement('canvas');
+    textCanvas.width = 512;
+    textCanvas.height = 140;
+    const ctx = textCanvas.getContext('2d');
+    
+    ctx.font = '48px "Segoe UI Emoji", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('👑', 256, 45);
+
+    ctx.font = '900 46px "Segoe UI", sans-serif';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 6;
+    
+    const textGrad = ctx.createLinearGradient(0, 60, 0, 130);
+    textGrad.addColorStop(0, '#fef08a');
+    textGrad.addColorStop(0.5, '#f59e0b');
+    textGrad.addColorStop(1, '#b45309');
+    ctx.fillStyle = textGrad;
+    ctx.fillText('3D LUDO ARENA', 256, 110);
+
+    const textTexture = new THREE.CanvasTexture(textCanvas);
+    const textMat = new THREE.MeshBasicMaterial({ map: textTexture, transparent: true });
+    const textPlane = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.0), textMat);
+    textPlane.position.set(0, 1.25, 0.2);
+    logoGroup.add(textPlane);
+
+    const boardGroup = new THREE.Group();
+    boardGroup.rotation.x = 0.55;
+    boardGroup.rotation.y = -0.45;
+    boardGroup.position.set(0, -0.4, 0);
+
+    const baseMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.2 });
+    const boardBase = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.18, 3.4), baseMat);
+    boardGroup.add(boardBase);
+
+    const deckMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.2 });
+    const boardDeck = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.2, 3.2), deckMat);
+    boardDeck.position.y = 0.02;
+    boardGroup.add(boardDeck);
+
+    const colors = [
+        { hex: 0xef4444, x: -0.85, z: -0.85 },
+        { hex: 0x22c55e, x:  0.85, z: -0.85 },
+        { hex: 0xeab308, x:  0.85, z:  0.85 },
+        { hex: 0x3b82f6, x: -0.85, z:  0.85 }
+    ];
+
+    colors.forEach(c => {
+        const padMat = new THREE.MeshStandardMaterial({ color: c.hex, roughness: 0.2, metalness: 0.1 });
+        const pad = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.22, 1.2), padMat);
+        pad.position.set(c.x, 0.03, c.z);
+        boardGroup.add(pad);
+
+        const dotMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const dot = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.24, 20), dotMat);
+        dot.position.set(c.x, 0.04, c.z);
+        boardGroup.add(dot);
+    });
+
+    function makeMiniPawn(hex) {
+        const pGrp = new THREE.Group();
+        const mat = new THREE.MeshStandardMaterial({ color: hex, roughness: 0.12, metalness: 0.4 });
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 0.2, 16), mat);
+        base.position.y = 0.1;
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), mat);
+        head.position.y = 0.28;
+        pGrp.add(base, head);
+        return pGrp;
+    }
+
+    boardGroup.add(makeMiniPawn(0xef4444)); 
+    boardGroup.add(makeMiniPawn(0xeab308)); 
+    boardGroup.add(makeMiniPawn(0x3b82f6)); 
+    boardGroup.add(makeMiniPawn(0x22c55e)); 
+
+    const diceMaterials = Array(6).fill(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 }));
+    const diceGeo = new THREE.BoxGeometry(0.72, 0.72, 0.72);
+    const centerDice = new THREE.Mesh(diceGeo, diceMaterials);
+    centerDice.position.set(0, 0.75, 0);
+    boardGroup.add(centerDice);
+
+    logoGroup.add(boardGroup);
+
+    let clock = 0;
+    function animateLogo() {
+        requestAnimationFrame(animateLogo);
+        clock += 0.02;
+        logoGroup.position.y = Math.sin(clock) * 0.08;
+        centerDice.rotation.x += 0.012;
+        centerDice.rotation.y += 0.018;
+        centerDice.position.y = 0.72 + Math.sin(clock * 2.2) * 0.08;
+        boardGroup.rotation.y = -0.45 + Math.sin(clock * 0.8) * 0.15;
+        renderer.render(scene, camera);
+    }
+    animateLogo();
+
+    window.addEventListener('resize', () => {
+        if (!container.clientWidth || !container.clientHeight) return;
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+})();
+
+// 2. PROFILE STORAGE & ECONOMY
+const PROFILE_KEY = "ludo_user_profile_v4";
+const DEFAULT_PROFILE = {
+    name: "Shankii",
+    avatar: "🧑‍🎤",
+    level: 1,
+    xp: 45,
+    gems: 150,
+    coins: 200,
+    lastDailyClaim: ""
+};
+
+let selectedAvatarTemp = "🧑‍🎤";
+
+function getProfile() {
+    let saved = localStorage.getItem(PROFILE_KEY);
+    if (!saved) {
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(DEFAULT_PROFILE));
+        return { ...DEFAULT_PROFILE };
+    }
+    return JSON.parse(saved);
+}
+
+function loadProfile() {
+    const data = getProfile();
+    document.getElementById('ui-name').innerText = data.name;
+    document.getElementById('ui-avatar').innerText = data.avatar;
+    document.getElementById('ui-lvl').innerText = "Lv." + data.level;
+    document.getElementById('ui-gems').innerText = Number(data.gems || 0).toLocaleString();
+    document.getElementById('ui-coins').innerText = Number(data.coins || 0).toLocaleString();
+    document.getElementById('ui-xp').style.width = (data.xp || 45) + "%";
+    selectedAvatarTemp = data.avatar;
+}
+
+function startPaidGame(redirectUrl) {
+    const data = getProfile();
+    if (data.coins < 50) {
+        alert("⚠️ Kam se kam 50 coins hone chahiye match lagane ke liye!\nUpar '+ Free' button se video ad dekh kar 100 free coins pao!");
+        return;
+    }
+
+    data.coins -= 50;
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
+    setTimeout(() => { window.location.href = redirectUrl; }, 120);
+}
+
+function checkDailyLoginBonus() {
+    const data = getProfile();
+    const today = new Date().toISOString().slice(0, 10);
+    if (data.lastDailyClaim !== today) {
+        setTimeout(() => {
+            document.getElementById('daily-modal').style.display = 'flex';
+        }, 500);
+    }
+}
+
+function claimDailyReward() {
+    try { niceAudio.play().catch(()=>{}); } catch(e){}
+    const data = getProfile();
+    data.coins = Number(data.coins || 0) + 50;
+    data.lastDailyClaim = new Date().toISOString().slice(0, 10);
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
+    loadProfile();
+    document.getElementById('daily-modal').style.display = 'none';
+    alert("🎉 Daily Login Reward Claimed! +50 Coins credited to your wallet!");
+}
+
+// ==========================================
+// 3. CLEAN REWARD TRIGGER (LINKED TO ads.js)
+// ==========================================
+function startWatchingAd() {
+    if (typeof triggerRewardedAd === 'function') {
+        triggerRewardedAd(() => {
+            grantAdReward();
+        });
+    } else {
+        alert("Ads engine load ho raha hai, thoda wait karein!");
+    }
+}
+
+function grantAdReward() {
+    try { niceAudio.play().catch(()=>{}); } catch(e){}
+
+    const data = getProfile();
+    data.coins = Number(data.coins || 0) + 100;
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
+    loadProfile();
+
+    const adModal = document.getElementById('ad-modal');
+    if (adModal) adModal.style.display = 'none';
+
+    alert("🎉 Congratulations! +100 Coins credited to your wallet!");
+}
+
+// PROFILE EDIT MODAL
+function openProfileModal() {
+    const saved = getProfile();
+    document.getElementById('edit-player-name').value = saved.name;
+    selectAvatar(saved.avatar);
+    document.getElementById('profile-modal').style.display = 'flex';
+}
+
+function closeProfileModal() {
+    document.getElementById('profile-modal').style.display = 'none';
+}
+
+function selectAvatar(emoji) {
+    selectedAvatarTemp = emoji;
+    const choices = document.querySelectorAll('.avatar-choice');
+    choices.forEach(c => {
+        if (c.innerText === emoji) c.classList.add('active');
+        else c.classList.remove('active');
+    });
+}
+
+function saveProfileData() {
+    const nameInput = document.getElementById('edit-player-name').value.trim();
+    if (!nameInput) {
+        alert("Kripya ek valid name dalein!");
+        return;
+    }
+    let saved = getProfile();
+    saved.name = nameInput;
+    saved.avatar = selectedAvatarTemp;
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(saved));
+    loadProfile();
+    closeProfileModal();
+}
+
+loadProfile();
+checkDailyLoginBonus();
+
+// ==========================================
+// IN-APP VERSION AUTO-CHECK CONTROLLER
+// ==========================================
+const CURRENT_APP_VERSION = "1.0.0";
+const REMOTE_VERSION_URL = "https://gist.githubusercontent.com/shankiikashyap-cpu/5e9702719e5d3cbe9e93994080d930e0/raw/version.json";
+
+let apkDownloadLink = "";
+
+async function checkAppUpdate() {
+    try {
+        const res = await fetch(REMOTE_VERSION_URL + "?t=" + Date.now());
+        if (!res.ok) return;
+
+        const data = await res.json();
+
+        if (data.latestVersion && data.latestVersion !== CURRENT_APP_VERSION) {
+            document.getElementById('update-title').innerText = data.title || "Naya Update Aaya Hai!";
+            document.getElementById('update-notes').innerText = data.notes || "Khelne ke liye game update karein.";
+            apkDownloadLink = data.apkUrl;
+
+            const modal = document.getElementById('update-modal');
+            if (modal) modal.style.display = 'flex';
+        }
+    } catch (err) {
+        console.log("Update check skipped:", err);
+    }
+}
+
+function triggerApkDownload() {
+    if (apkDownloadLink) {
+        window.open(apkDownloadLink, '_system');
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(checkAppUpdate, 1500);
+});
+</script>
+
+<!-- ========================================== -->
+<!-- IN-APP AUTO-UPDATE POPUP DIALOG            -->
+<!-- ========================================== -->
+<div id="update-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,6,23,0.85); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:20px; box-sizing:border-box;">
+    <div style="background:#0f172a; border:2px solid #3b82f6; border-radius:24px; padding:28px 22px; width:100%; max-width:340px; text-align:center; color:#fff; box-shadow:0 0 35px rgba(59,130,246,0.5);">
+        <div style="font-size:42px; margin-bottom:12px;">🚀</div>
+        <h3 id="update-title" style="margin:0 0 10px 0; color:#60a5fa; font-size:20px; font-weight:800;">Naya Update Aaya Hai!</h3>
+        <p id="update-notes" style="font-size:13px; color:#cbd5e1; line-height:1.5; margin:0 0 22px 0;">Online mode khelne ke liye game update karein.</p>
+        <button id="update-btn" onclick="triggerApkDownload()" style="background:#2563eb; color:#ffffff; border:none; padding:13px 20px; font-size:15px; font-weight:800; border-radius:14px; cursor:pointer; width:100%; box-shadow:0 6px 18px rgba(37,99,235,0.45); transition:transform 0.1s;">
+            UPDATE NOW ⚡
+        </button>
+    </div>
+</div>
+</body>
+</html>
