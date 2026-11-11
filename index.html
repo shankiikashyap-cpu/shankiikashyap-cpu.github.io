@@ -475,29 +475,46 @@
         </div>
     </div>
 
-    <!-- IN-APP REWARD MODAL (30 SECONDS LOCKED IMPRESSION) -->
-    <div id="ad-modal" class="modal-overlay">
-        <div style="position:relative; background:#0f172a; border:2px solid #f59e0b; border-radius:20px; padding:18px 14px; width:330px; text-align:center; box-shadow:0 0 35px rgba(0,0,0,0.9);">
+    <!-- FULL SCREEN REWARDED VIDEO AD STAGE (MOBILE APP STYLE) -->
+    <div id="ad-modal" class="modal-overlay" style="padding:0; background:#020617; z-index:99999;">
+        <div style="position:relative; width:100vw; height:100vh; max-width:440px; background:radial-gradient(circle at center, #0f172a 0%, #020617 100%); display:flex; flex-direction:column; justify-content:space-between; align-items:center; padding:20px 16px; box-sizing:border-box;">
             
-            <!-- CROSS BUTTON (Hidden for 30s) -->
-            <button id="ad-cross-btn" type="button" onclick="closeAdAndReward()" style="display:none; position:absolute; top:-12px; right:-12px; width:34px; height:34px; border-radius:50%; background:#ef4444; color:#fff; border:2px solid #fff; font-size:16px; font-weight:900; cursor:pointer; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.5); z-index:10;">✕</button>
-
-            <p style="font-size:12px; color:#94a3b8; font-weight:800; text-transform:uppercase; margin-bottom:8px;">SPONSORED REWARD VIDEO</p>
-
-            <!-- AD CONTAINER -->
-            <div id="ad-frame-wrapper" style="width:320px; height:60px; background:#020617; border-radius:12px; overflow:hidden; margin:0 auto 10px auto; display:flex; align-items:center; justify-content:center;">
-               <iframe id="ad-iframe" srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:#020617;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;"></iframe>
+            <!-- TOP BAR (Status + Cross) -->
+            <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
+                <div style="background:rgba(15,23,42,0.85); border:1px solid #334155; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:800; color:#94a3b8; letter-spacing:1px;">
+                    SPONSORED REWARD AD
+                </div>
+                
+                <!-- RED CROSS (30s complete hone par appear hoga) -->
+                <button id="ad-cross-btn" type="button" onclick="closeAdAndReward()" style="display:none; width:38px; height:38px; border-radius:50%; background:#ef4444; color:#fff; border:2px solid #ffffff; font-size:18px; font-weight:900; cursor:pointer; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(239,68,68,0.85); z-index:20;">✕</button>
             </div>
 
-            <!-- COUNTDOWN DISPLAY -->
-            <div id="ad-status-msg" style="font-size:13px; color:#facc15; font-weight:800; margin-bottom:10px;">
-                Ad chal rahi hai... Reward in: <span id="ad-sec-count" style="color:#38bdf8; font-size:16px;">30</span>s
+            <!-- CENTER FULL AD THEATER -->
+            <div style="width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; margin:auto 0;">
+                <div style="font-size:38px; filter:drop-shadow(0 0 10px #f59e0b);">🎬</div>
+                <div id="ad-status-msg" style="font-size:15px; color:#facc15; font-weight:800; text-align:center;">
+                    Ad chal rahi hai... Reward in: <span id="ad-sec-count" style="color:#38bdf8; font-size:22px; font-weight:900;">30</span>s
+                </div>
+
+                <!-- AD DISPLAY BOX 1 -->
+                <div style="width:100%; max-width:320px; height:60px; background:#000; border:1px solid #334155; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 25px rgba(0,0,0,0.8);">
+                    <iframe id="ad-iframe-1" srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:#000;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;"></iframe>
+                </div>
+
+                <!-- AD DISPLAY BOX 2 -->
+                <div style="width:100%; max-width:320px; height:60px; background:#000; border:1px solid #334155; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 25px rgba(0,0,0,0.8);">
+                    <iframe id="ad-iframe-2" srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:#000;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;"></iframe>
+                </div>
+
+                <div style="font-size:12px; color:#94a3b8; font-weight:700;">Reward: <span style="color:#34d399;">+100 Gold Coins</span></div>
             </div>
-            
-            <!-- CLAIM BUTTON (Disabled during 30s) -->
-            <button id="ad-claim-btn" type="button" disabled style="background:#334155; color:#94a3b8; border:none; padding:10px 16px; font-size:13px; font-weight:800; border-radius:12px; width:100%; cursor:not-allowed;">
-                ⏳ Please Wait (30s)...
-            </button>
+
+            <!-- BOTTOM CLAIM BUTTON -->
+            <div style="width:100%; max-width:360px;">
+                <button id="ad-claim-btn" type="button" disabled style="background:#1e293b; color:#64748b; border:1px solid #334155; padding:14px; font-size:15px; font-weight:800; border-radius:16px; width:100%; cursor:not-allowed; box-shadow:none;">
+                    ⏳ Please Wait (30s)...
+                </button>
+            </div>
         </div>
     </div>
 
@@ -742,7 +759,7 @@ function claimDailyReward() {
 }
 
 // ==========================================
-// 3. REWARDED AD CONTROLLER (30s LOCKED IMPRESSION)
+// 3. REWARDED AD CONTROLLER (FULL SCREEN 30s)
 // ==========================================
 let adTimer = null;
 let adTimeLeft = 30;
@@ -753,24 +770,24 @@ function startWatchingAd() {
     const claimBtn = document.getElementById('ad-claim-btn');
     const secCount = document.getElementById('ad-sec-count');
     const statusMsg = document.getElementById('ad-status-msg');
-    const adIframe = document.getElementById('ad-iframe');
+    const adIframe1 = document.getElementById('ad-iframe-1');
+    const adIframe2 = document.getElementById('ad-iframe-2');
 
     if (!modal) return;
 
-    // Reset iframe to trigger fresh impression
-    if (adIframe) {
-        adIframe.srcdoc = adIframe.srcdoc;
-    }
+    // Refresh iframes to ensure fresh ad calls
+    if (adIframe1) adIframe1.srcdoc = adIframe1.srcdoc;
+    if (adIframe2) adIframe2.srcdoc = adIframe2.srcdoc;
 
     modal.style.display = 'flex';
     adTimeLeft = 30;
 
-    // 30s tak Cross aur Claim dono locked
+    // 30 seconds tak Cross aur Claim dono locked
     if (crossBtn) crossBtn.style.display = 'none';
     if (claimBtn) {
         claimBtn.disabled = true;
-        claimBtn.style.background = '#334155';
-        claimBtn.style.color = '#94a3b8';
+        claimBtn.style.background = '#1e293b';
+        claimBtn.style.color = '#64748b';
         claimBtn.style.cursor = 'not-allowed';
         claimBtn.innerText = "⏳ Please Wait (30s)...";
         claimBtn.onclick = null;
@@ -778,7 +795,7 @@ function startWatchingAd() {
     if (secCount) secCount.innerText = adTimeLeft;
     if (statusMsg) {
         statusMsg.style.display = 'block';
-        statusMsg.innerHTML = `Ad chal rahi hai... Reward in: <span id="ad-sec-count" style="color:#38bdf8; font-size:16px;">30</span>s`;
+        statusMsg.innerHTML = `Ad chal rahi hai... Reward in: <span id="ad-sec-count" style="color:#38bdf8; font-size:22px; font-weight:900;">30</span>s`;
     }
 
     clearInterval(adTimer);
@@ -788,16 +805,17 @@ function startWatchingAd() {
         if (liveSec) liveSec.innerText = adTimeLeft;
         if (claimBtn) claimBtn.innerText = `⏳ Please Wait (${adTimeLeft}s)...`;
 
-        // 30 seconds khatam hone par unlock
+        // 30 seconds poore hone par unlock
         if (adTimeLeft <= 0) {
             clearInterval(adTimer);
-            if (statusMsg) statusMsg.innerHTML = "🎉 <span style='color:#34d399;'>Ad Completed! Reward Ready!</span>";
+            if (statusMsg) statusMsg.innerHTML = "🎉 <span style='color:#34d399;'>Ad Complete! Claim Your Reward</span>";
             if (crossBtn) crossBtn.style.display = 'flex';
             if (claimBtn) {
                 claimBtn.disabled = false;
-                claimBtn.style.background = '#10b981';
+                claimBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
                 claimBtn.style.color = '#ffffff';
                 claimBtn.style.cursor = 'pointer';
+                claimBtn.style.boxShadow = '0 6px 20px rgba(16,185,129,0.5)';
                 claimBtn.innerText = "✕ CLOSE & CLAIM +100 COINS 🎉";
                 claimBtn.onclick = closeAdAndReward;
             }
@@ -817,7 +835,7 @@ function closeAdAndReward() {
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
     loadProfile();
 
-    alert("🎉 Ad Verified (30s Complete)! +100 Coins credited to your wallet!");
+    alert("🎉 Ad Verified! +100 Coins aapke wallet me add ho gaye!");
 }
 
 // PROFILE EDIT MODAL
