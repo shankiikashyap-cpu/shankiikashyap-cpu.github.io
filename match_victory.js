@@ -1,8 +1,9 @@
 // ========================================================
-// MATCH VICTORY & TRUE FULL-SCREEN INTERSTITIAL AD MODULE
+// MATCH VICTORY & SMARTLINK FULL-PAGE AD MODULE
 // ========================================================
 
 (function initMatchVictorySystem() {
+    const SMARTLINK_URL = "https://asiafilm.org/4/954a104b8139a43df248e2b88ce49bf6";
     let finishedRankings = [];
     let exitTimer = null;
     let exitTimeLeft = 5;
@@ -79,7 +80,7 @@
         `;
         document.body.appendChild(vicModal);
 
-        // 2. EDGE-TO-EDGE FULL SCREEN AD STAGE (100% SCREEN)
+        // 2. FULL SCREEN TRANSITION & COUNTDOWN LOCK SCREEN
         const adScreen = document.createElement('div');
         adScreen.id = 'victory-exit-ad-screen';
         adScreen.style.cssText = `
@@ -87,37 +88,37 @@
             position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
-            background: #000000;
+            background: #020617;
             z-index: 9999999;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 14px;
+            padding: 24px 16px;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         `;
 
         adScreen.innerHTML = `
-            <!-- FLOATING TOP BAR -->
-            <div style="width: 100%; max-width: 440px; display: flex; justify-content: space-between; align-items: center; z-index: 10;">
+            <!-- TOP BAR -->
+            <div style="width: 100%; max-width: 440px; display: flex; justify-content: space-between; align-items: center;">
                 <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; color: #cbd5e1;">
-                    SPONSORED
+                    SPONSORED CAMPAIGN
                 </div>
                 <div id="vic-exit-count-badge" style="background: rgba(0, 0, 0, 0.8); border: 1px solid #facc15; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 900; color: #facc15;">
-                    Ad ends in: <span id="vic-exit-count" style="color: #38bdf8;">5</span>s
+                    Closing in: <span id="vic-exit-count" style="color: #38bdf8;">5</span>s
                 </div>
-                
-                <!-- RED CROSS (Pehle hidden, theek 5s baad show hoga) -->
                 <button id="vic-ad-cross" type="button" style="display: none; width: 38px; height: 38px; border-radius: 50%; background: #ef4444; color: #fff; border: 2px solid #fff; font-size: 18px; font-weight: 900; cursor: pointer; align-items: center; justify-content: center; box-shadow: 0 0 16px rgba(239, 68, 68, 0.9);">✕</button>
             </div>
 
-            <!-- ENTIRE SCREEN AD VIEW -->
-            <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; flex: 1; margin: 10px 0;">
-                <iframe srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;width:100vw;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#000;gap:20px;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" style="width: 100%; height: 100%; border: none; overflow: hidden;" scrolling="no"></iframe>
+            <!-- CENTER CONTENT -->
+            <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; max-width: 340px;">
+                <div style="font-size: 52px; animation: pulse 1.5s infinite;">🎁</div>
+                <h3 style="font-size: 20px; color: #fff; font-weight: 900; margin: 0;">Opening Sponsored Offer...</h3>
+                <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin: 0;">Special partner rewards are opening in full screen. You can return to the lobby once the timer ends.</p>
             </div>
 
-            <!-- BOTTOM SKIP / CONTINUE BAR (5s locked) -->
-            <div style="width: 100%; max-width: 360px; z-index: 10;">
+            <!-- BOTTOM BUTTON -->
+            <div style="width: 100%; max-width: 360px;">
                 <button id="vic-continue-btn" type="button" disabled style="background: #1e293b; color: #64748b; border: 1px solid #334155; padding: 14px; font-size: 15px; font-weight: 900; border-radius: 16px; width: 100%; cursor: not-allowed;">
                     ⏳ Please Wait (5s)...
                 </button>
@@ -141,7 +142,9 @@
         adScreen.style.display = 'flex';
         exitTimeLeft = 5;
 
-        // Start me cross button aur claim dono disabled/hidden
+        // Smartlink open karna naye window/tab me
+        window.open(SMARTLINK_URL, '_blank');
+
         crossBtn.style.display = 'none';
         countBadge.style.display = 'block';
         contBtn.disabled = true;
@@ -157,11 +160,10 @@
             counterText.innerText = exitTimeLeft;
             contBtn.innerText = `⏳ Please Wait (${exitTimeLeft}s)...`;
 
-            // Exact 5 seconds poore hone par cross button appear hoga
             if (exitTimeLeft <= 0) {
                 clearInterval(exitTimer);
                 countBadge.style.display = 'none';
-                crossBtn.style.display = 'flex'; // 5s baad Cross button visible
+                crossBtn.style.display = 'flex';
                 contBtn.disabled = false;
                 contBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
                 contBtn.style.color = '#ffffff';
