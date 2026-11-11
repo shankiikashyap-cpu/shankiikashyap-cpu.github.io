@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>3D Ludo Arena - Main Home</title>
     
-<meta name="monetag" content="2346e206bb2f7846f16fb9a56e4b2d40">
+    <meta name="monetag" content="2346e206bb2f7846f16fb9a56e4b2d40">
 
-    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -185,12 +184,12 @@
             position: relative;
             width: 100%;
             max-width: 420px;
-            height: 220px;
+            height: 200px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin: 4px 0;
+            margin: 2px 0;
         }
 
         #logo-3d-canvas {
@@ -198,6 +197,18 @@
             height: 100%;
             display: block;
             pointer-events: none;
+        }
+
+        .adsterra-banner-container {
+            width: 100%;
+            max-width: 440px;
+            min-height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            overflow: hidden;
         }
 
         .boxes-container {
@@ -331,7 +342,7 @@
         .btn-modal-save { flex: 1; padding: 11px; background: #10b981; color: #fff; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
         .btn-modal-close { flex: 1; padding: 11px; background: #475569; color: #fff; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
 
-        /* --- FULL SCREEN REWARDED VIDEO AD STAGE (FALLBACK MODAL) --- */
+        /* --- FULL SCREEN REWARDED VIDEO AD STAGE --- */
         #ad-modal {
             background: rgba(0, 0, 0, 0.94);
         }
@@ -355,20 +366,14 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: #334155;
-            color: #94a3b8;
+            background: #ef4444;
+            color: #ffffff;
             font-size: 16px;
             font-weight: 900;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             border: 1px solid rgba(255,255,255,0.15);
-            cursor: not-allowed;
-        }
-
-        .ad-corner-close.active {
-            background: #ef4444;
-            color: #ffffff;
             cursor: pointer;
             box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
         }
@@ -421,7 +426,7 @@
             </div>
             <div class="currency-capsule" title="Coins">
                 <span class="coin-icon">C</span>
-                <span id="ui-coins">200</span>
+                <span id="ui-coins">500</span>
             </div>
             <button type="button" class="btn-free-reward" onclick="startWatchingAd()" title="Watch video ad for free coins">
                 <span>+ Free</span>
@@ -432,6 +437,11 @@
     <!-- 3D LOGO -->
     <div class="showcase-stage" id="stage-box">
         <canvas id="logo-3d-canvas"></canvas>
+    </div>
+
+    <!-- ADSTERRA HOME BANNER -->
+    <div class="adsterra-banner-container">
+        <iframe srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:transparent;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;overflow:hidden;"></iframe>
     </div>
 
     <!-- MODES -->
@@ -501,13 +511,13 @@
                 <span class="coin-icon" style="width:22px; height:22px; font-size:12px;">C</span>
                 <span style="font-size:20px; font-weight:900; color:#facc15;">+50 Coins</span>
             </div>
-            <button type="button" class="main-btn" style="background:#10b981; justify-content:center; width:100%; border:none;" onclick="claimDailyReward()">
+            <button type="button" class="main-btn" onclick="claimDailyReward()" style="background:#10b981; justify-content:center; width:100%; border:none;">
                 CLAIM 50 COINS 🎉
             </button>
         </div>
     </div>
 
-    <!-- REWARDED VIDEO AD MODAL (FALLBACK ONLY IF AD FAILS) -->
+    <!-- REWARDED VIDEO AD MODAL -->
     <div id="ad-modal" class="modal-overlay">
         <div class="ad-theater">
             <div id="corner-x-btn" class="ad-corner-close" onclick="handleAdModalClose()">✕</div>
@@ -518,7 +528,7 @@
             <div class="ad-timer-ring" id="ad-countdown">5</div>
             <p style="font-size:12px; color:#facc15; font-weight:800; margin-bottom:18px;">Reward: +100 Coins</p>
 
-            <button id="ad-action-btn" type="button" style="background:#334155; color:#94a3b8; border:none; padding:12px 18px; border-radius:14px; font-size:13px; font-weight:800; width:100%; cursor:not-allowed;" onclick="handleAdModalAction()">
+            <button id="ad-action-btn" type="button" style="background:#334155; color:#94a3b8; border:none; padding:12px 18px; border-radius:14px; font-size:13px; font-weight:800; width:100%; cursor:not-allowed;">
                 Please Wait (5s)...
             </button>
         </div>
@@ -689,8 +699,8 @@ const DEFAULT_PROFILE = {
     level: 1,
     xp: 45,
     gems: 150,
-    coins: 200,
-    lastDailyClaim: ""
+    coins: 500,
+    lastDailyClaimTimestamp: 0
 };
 
 let selectedAvatarTemp = "🧑‍🎤";
@@ -706,6 +716,13 @@ function getProfile() {
 
 function loadProfile() {
     const data = getProfile();
+
+    // AUTO-RESTORE COINS IF ZERO OR RESET
+    if (!data.coins || Number(data.coins) < 50) {
+        data.coins = 500;
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
+    }
+
     document.getElementById('ui-name').innerText = data.name;
     document.getElementById('ui-avatar').innerText = data.avatar;
     document.getElementById('ui-lvl').innerText = "Lv." + data.level;
@@ -727,12 +744,17 @@ function startPaidGame(redirectUrl) {
     setTimeout(() => { window.location.href = redirectUrl; }, 120);
 }
 
+const CLAIM_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 Hours
+
 function checkDailyLoginBonus() {
     const data = getProfile();
-    const today = new Date().toISOString().slice(0, 10);
-    if (data.lastDailyClaim !== today) {
+    const lastClaim = Number(data.lastDailyClaimTimestamp || 0);
+    const now = Date.now();
+
+    if (!lastClaim || (now - lastClaim) >= CLAIM_INTERVAL_MS) {
         setTimeout(() => {
-            document.getElementById('daily-modal').style.display = 'flex';
+            const modal = document.getElementById('daily-modal');
+            if (modal) modal.style.display = 'flex';
         }, 500);
     }
 }
@@ -740,25 +762,74 @@ function checkDailyLoginBonus() {
 function claimDailyReward() {
     try { niceAudio.play().catch(()=>{}); } catch(e){}
     const data = getProfile();
+    
     data.coins = Number(data.coins || 0) + 50;
-    data.lastDailyClaim = new Date().toISOString().slice(0, 10);
+    data.lastDailyClaimTimestamp = Date.now();
+    
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
     loadProfile();
-    document.getElementById('daily-modal').style.display = 'none';
+    
+    const modal = document.getElementById('daily-modal');
+    if (modal) modal.style.display = 'none';
+    
     alert("🎉 Daily Login Reward Claimed! +50 Coins credited to your wallet!");
 }
 
 // ==========================================
-// 3. CLEAN REWARD TRIGGER (LINKED TO ads.js)
+// 3. REWARDED VIDEO AD CONTROLLER
 // ==========================================
+let adTimerInterval = null;
+let adSecondsLeft = 5;
+
 function startWatchingAd() {
-    if (typeof triggerRewardedAd === 'function') {
-        triggerRewardedAd(() => {
-            grantAdReward();
-        });
-    } else {
-        alert("Ads engine load ho raha hai, thoda wait karein!");
+    const modal = document.getElementById('ad-modal');
+    const timerText = document.getElementById('ad-countdown');
+    const actionBtn = document.getElementById('ad-action-btn');
+    const closeBtn = document.getElementById('corner-x-btn');
+
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+    adSecondsLeft = 5;
+    if (timerText) timerText.innerText = adSecondsLeft;
+    if (closeBtn) closeBtn.style.display = 'none';
+    if (actionBtn) {
+        actionBtn.innerText = `Please Wait (${adSecondsLeft}s)...`;
+        actionBtn.style.opacity = '0.5';
+        actionBtn.style.cursor = 'not-allowed';
+        actionBtn.style.background = '#334155';
+        actionBtn.onclick = null;
     }
+
+    clearInterval(adTimerInterval);
+    adTimerInterval = setInterval(() => {
+        adSecondsLeft--;
+        if (timerText) timerText.innerText = adSecondsLeft;
+        if (actionBtn) actionBtn.innerText = `Please Wait (${adSecondsLeft}s)...`;
+
+        if (adSecondsLeft <= 0) {
+            clearInterval(adTimerInterval);
+            if (timerText) timerText.innerText = "✓ Ready!";
+            if (closeBtn) closeBtn.style.display = 'flex';
+            if (actionBtn) {
+                actionBtn.innerText = "CLAIM +100 COINS 🎉";
+                actionBtn.style.opacity = '1';
+                actionBtn.style.background = '#10b981';
+                actionBtn.style.color = '#ffffff';
+                actionBtn.style.cursor = 'pointer';
+                actionBtn.onclick = () => {
+                    grantAdReward();
+                    handleAdModalClose();
+                };
+            }
+        }
+    }, 1000);
+}
+
+function handleAdModalClose() {
+    clearInterval(adTimerInterval);
+    const modal = document.getElementById('ad-modal');
+    if (modal) modal.style.display = 'none';
 }
 
 function grantAdReward() {
@@ -768,9 +839,6 @@ function grantAdReward() {
     data.coins = Number(data.coins || 0) + 100;
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
     loadProfile();
-
-    const adModal = document.getElementById('ad-modal');
-    if (adModal) adModal.style.display = 'none';
 
     alert("🎉 Congratulations! +100 Coins credited to your wallet!");
 }
@@ -836,9 +904,7 @@ async function checkAppUpdate() {
             const modal = document.getElementById('update-modal');
             if (modal) modal.style.display = 'flex';
         }
-    } catch (err) {
-        console.log("Update check skipped:", err);
-    }
+    } catch (err) {}
 }
 
 function triggerApkDownload() {
@@ -852,9 +918,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<!-- ========================================== -->
-<!-- IN-APP AUTO-UPDATE POPUP DIALOG            -->
-<!-- ========================================== -->
+<!-- IN-APP AUTO-UPDATE POPUP DIALOG -->
 <div id="update-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,6,23,0.85); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:20px; box-sizing:border-box;">
     <div style="background:#0f172a; border:2px solid #3b82f6; border-radius:24px; padding:28px 22px; width:100%; max-width:340px; text-align:center; color:#fff; box-shadow:0 0 35px rgba(59,130,246,0.5);">
         <div style="font-size:42px; margin-bottom:12px;">🚀</div>
