@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Ludo Arena - Select Mode</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #1e3a8a 0%, #09132e 65%, #030712 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .menu-card {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            padding: 30px;
+            border-radius: 28px;
+            border: 2px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: #f8fafc;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .mode-btn {
+            padding: 16px 20px;
+            font-size: 16px;
+            font-weight: 800;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+
+        .mode-btn:hover {
+            transform: scale(1.02);
+            filter: brightness(1.12);
+        }
+
+        .btn-2p { background: linear-gradient(135deg, #ef4444, #eab308); }
+        .btn-3p { background: linear-gradient(135deg, #ef4444, #22c55e); }
+        .btn-4p { background: linear-gradient(135deg, #3b82f6, #a855f7); }
+
+        .tag {
+            font-size: 11px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-weight: 700;
+        }
+
+        .back-btn {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1.5px solid rgba(255, 255, 255, 0.14);
+            color: #94a3b8;
+            padding: 12px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.15s;
+            margin-top: 4px;
+        }
+
+        .back-btn:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="menu-card">
+        <div class="header">
+            <h1>👥 Pass & Play</h1>
+            <p>Select number of players</p>
+        </div>
+
+        <button type="button" class="mode-btn btn-2p" onclick="navToGame(2)">
+            <span>⚔️ 2 Players</span>
+            <span class="tag">Red vs Yellow</span>
+        </button>
+
+        <button type="button" class="mode-btn btn-3p" onclick="navToGame(3)">
+            <span>⚡ 3 Players</span>
+            <span class="tag">Red, Green, Yellow</span>
+        </button>
+
+        <button type="button" class="mode-btn btn-4p" onclick="navToGame(4)">
+            <span>👑 4 Players</span>
+            <span class="tag">Classic Match</span>
+        </button>
+
+        <button type="button" class="back-btn" onclick="navBack()">⬅ Back to Dashboard</button>
+    </div>
+
+<script>
+const clickAudio = new Audio('click.mp3');
+clickAudio.preload = 'auto';
+
+function playClickSound() {
+    try {
+        clickAudio.currentTime = 0;
+        const p = clickAudio.play();
+        if (p !== undefined) p.catch(() => {});
+    } catch(err) {}
+}
+
+document.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('button, .mode-btn, .back-btn')) {
+        playClickSound();
+    }
+});
+
+function navToGame(players) {
+    setTimeout(() => {
+        // Seedha game.html par bhejega player count ke sath
+        window.location.href = `game.html?mode=${players}`;
+    }, 120);
+}
+
+function navBack() {
+    setTimeout(() => {
+        // Wapas main screen index.html par
+        window.location.href = 'index.html';
+    }, 120);
+}
+</script>
+
+</body>
+</html>
