@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>3D Ludo Arena - Main Home</title>
     
-    <meta name="monetag" content="2346e206bb2f7846f16fb9a56e4b2d40">
+    <!-- ADSTERRA SOCIAL BAR SCRIPT -->
+    <script data-cfasync="false" src="https://bauval.org/14/63d9d3f5a205abf1ec43607647d12b6a"></script>
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -299,7 +300,7 @@
             gap: 4px;
         }
 
-        /* --- MODAL POPUPS --- */
+        /* MODAL POPUPS */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.88); backdrop-filter: blur(10px);
@@ -342,50 +343,7 @@
         .btn-modal-save { flex: 1; padding: 11px; background: #10b981; color: #fff; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
         .btn-modal-close { flex: 1; padding: 11px; background: #475569; color: #fff; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
 
-        /* --- FULL SCREEN REWARDED VIDEO AD STAGE --- */
-        #ad-modal {
-            background: rgba(0, 0, 0, 0.94);
-        }
-
-        .ad-theater {
-            position: relative;
-            background: #020617;
-            border: 2px solid #10b981;
-            padding: 24px 20px;
-            border-radius: 24px;
-            text-align: center;
-            width: 90%;
-            max-width: 330px;
-            box-shadow: 0 0 50px rgba(16, 185, 129, 0.35);
-        }
-
-        .ad-corner-close {
-            position: absolute;
-            top: 10px;
-            right: 12px;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #ef4444;
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: 900;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255,255,255,0.15);
-            cursor: pointer;
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
-        }
-
-        .ad-timer-ring {
-            font-size: 42px;
-            font-weight: 900;
-            color: #10b981;
-            margin: 15px 0 10px 0;
-        }
-
-        /* DAILY CLAIM POPUP */
+        /* DAILY LOGIN POPUP */
         #daily-modal .daily-box {
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
             border: 2px solid #facc15;
@@ -428,7 +386,7 @@
                 <span class="coin-icon">C</span>
                 <span id="ui-coins">500</span>
             </div>
-            <button type="button" class="btn-free-reward" onclick="startWatchingAd()" title="Watch video ad for free coins">
+            <button type="button" class="btn-free-reward" onclick="startWatchingAd()" title="Claim free coins">
                 <span>+ Free</span>
             </button>
         </div>
@@ -517,19 +475,23 @@
         </div>
     </div>
 
-    <!-- REWARDED VIDEO AD MODAL -->
+    <!-- IN-APP REWARD MODAL (NO TIMER, DIRECT AD + CROSS) -->
     <div id="ad-modal" class="modal-overlay">
-        <div class="ad-theater">
-            <div id="corner-x-btn" class="ad-corner-close" onclick="handleAdModalClose()">✕</div>
-            <div style="font-size:32px; margin-bottom:4px;">🎬</div>
-            <h3 style="font-size:18px; font-weight:900; color:#f8fafc;">Reward Video</h3>
-            <p style="font-size:12px; color:#94a3b8; margin-top:2px;">Coins lene ke liye ad dekhein:</p>
-            
-            <div class="ad-timer-ring" id="ad-countdown">5</div>
-            <p style="font-size:12px; color:#facc15; font-weight:800; margin-bottom:18px;">Reward: +100 Coins</p>
+        <div style="position:relative; background:#0f172a; border:2px solid #f59e0b; border-radius:20px; padding:18px 14px; width:330px; text-align:center; box-shadow:0 0 35px rgba(0,0,0,0.9);">
+            <!-- CROSS BUTTON -->
+            <button type="button" onclick="closeAdAndReward()" style="position:absolute; top:-12px; right:-12px; width:34px; height:34px; border-radius:50%; background:#ef4444; color:#fff; border:2px solid #fff; font-size:16px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.5);">✕</button>
 
-            <button id="ad-action-btn" type="button" style="background:#334155; color:#94a3b8; border:none; padding:12px 18px; border-radius:14px; font-size:13px; font-weight:800; width:100%; cursor:not-allowed;">
-                Please Wait (5s)...
+            <p style="font-size:12px; color:#94a3b8; font-weight:800; text-transform:uppercase; margin-bottom:8px;">Special Reward</p>
+
+            <!-- ADSTERRA 300x250 IN-APP AD -->
+            <div style="width:300px; height:250px; background:#020617; border-radius:12px; overflow:hidden; margin:0 auto 10px auto; display:flex; align-items:center; justify-content:center;">
+                <iframe srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:#020617;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':250,'width':300,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="300" height="250" frameborder="0" scrolling="no" style="border:none;"></iframe>
+            </div>
+
+            <p style="font-size:12px; color:#facc15; font-weight:800; margin-bottom:12px;">Reward: +100 Coins 🎉</p>
+            
+            <button type="button" onclick="closeAdAndReward()" style="background:#10b981; color:#ffffff; border:none; padding:10px 16px; font-size:13px; font-weight:800; border-radius:12px; width:100%; cursor:pointer;">
+                ✕ CLOSE & CLAIM REWARD
             </button>
         </div>
     </div>
@@ -717,7 +679,6 @@ function getProfile() {
 function loadProfile() {
     const data = getProfile();
 
-    // AUTO-RESTORE COINS IF ZERO OR RESET
     if (!data.coins || Number(data.coins) < 50) {
         data.coins = 500;
         localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
@@ -735,7 +696,7 @@ function loadProfile() {
 function startPaidGame(redirectUrl) {
     const data = getProfile();
     if (data.coins < 50) {
-        alert("⚠️ Kam se kam 50 coins hone chahiye match lagane ke liye!\nUpar '+ Free' button se video ad dekh kar 100 free coins pao!");
+        alert("⚠️ Kam se kam 50 coins hone chahiye match lagane ke liye!\nUpar '+ Free' button se ad dekh kar free coins pao!");
         return;
     }
 
@@ -744,7 +705,7 @@ function startPaidGame(redirectUrl) {
     setTimeout(() => { window.location.href = redirectUrl; }, 120);
 }
 
-const CLAIM_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 Hours
+const CLAIM_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 function checkDailyLoginBonus() {
     const data = getProfile();
@@ -772,67 +733,23 @@ function claimDailyReward() {
     const modal = document.getElementById('daily-modal');
     if (modal) modal.style.display = 'none';
     
-    alert("🎉 Daily Login Reward Claimed! +50 Coins credited to your wallet!");
+    alert("🎉 Daily Login Reward Claimed! +50 Coins credited!");
 }
 
 // ==========================================
-// 3. REWARDED VIDEO AD CONTROLLER
+// 3. REWARDED AD CONTROLLER (IN-APP CROSS)
 // ==========================================
-let adTimerInterval = null;
-let adSecondsLeft = 5;
-
 function startWatchingAd() {
     const modal = document.getElementById('ad-modal');
-    const timerText = document.getElementById('ad-countdown');
-    const actionBtn = document.getElementById('ad-action-btn');
-    const closeBtn = document.getElementById('corner-x-btn');
-
-    if (!modal) return;
-
-    modal.style.display = 'flex';
-    adSecondsLeft = 5;
-    if (timerText) timerText.innerText = adSecondsLeft;
-    if (closeBtn) closeBtn.style.display = 'none';
-    if (actionBtn) {
-        actionBtn.innerText = `Please Wait (${adSecondsLeft}s)...`;
-        actionBtn.style.opacity = '0.5';
-        actionBtn.style.cursor = 'not-allowed';
-        actionBtn.style.background = '#334155';
-        actionBtn.onclick = null;
+    if (modal) {
+        modal.style.display = 'flex';
     }
-
-    clearInterval(adTimerInterval);
-    adTimerInterval = setInterval(() => {
-        adSecondsLeft--;
-        if (timerText) timerText.innerText = adSecondsLeft;
-        if (actionBtn) actionBtn.innerText = `Please Wait (${adSecondsLeft}s)...`;
-
-        if (adSecondsLeft <= 0) {
-            clearInterval(adTimerInterval);
-            if (timerText) timerText.innerText = "✓ Ready!";
-            if (closeBtn) closeBtn.style.display = 'flex';
-            if (actionBtn) {
-                actionBtn.innerText = "CLAIM +100 COINS 🎉";
-                actionBtn.style.opacity = '1';
-                actionBtn.style.background = '#10b981';
-                actionBtn.style.color = '#ffffff';
-                actionBtn.style.cursor = 'pointer';
-                actionBtn.onclick = () => {
-                    grantAdReward();
-                    handleAdModalClose();
-                };
-            }
-        }
-    }, 1000);
 }
 
-function handleAdModalClose() {
-    clearInterval(adTimerInterval);
+function closeAdAndReward() {
     const modal = document.getElementById('ad-modal');
     if (modal) modal.style.display = 'none';
-}
 
-function grantAdReward() {
     try { niceAudio.play().catch(()=>{}); } catch(e){}
 
     const data = getProfile();
@@ -840,7 +757,7 @@ function grantAdReward() {
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
     loadProfile();
 
-    alert("🎉 Congratulations! +100 Coins credited to your wallet!");
+    alert("🎉 Reward Claimed! +100 Coins credited to your wallet!");
 }
 
 // PROFILE EDIT MODAL
