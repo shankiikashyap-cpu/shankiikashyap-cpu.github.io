@@ -475,23 +475,28 @@
         </div>
     </div>
 
-    <!-- IN-APP REWARD MODAL (NO TIMER, DIRECT AD + CROSS) -->
+    <!-- IN-APP REWARD MODAL (30 SECONDS LOCKED IMPRESSION) -->
     <div id="ad-modal" class="modal-overlay">
         <div style="position:relative; background:#0f172a; border:2px solid #f59e0b; border-radius:20px; padding:18px 14px; width:330px; text-align:center; box-shadow:0 0 35px rgba(0,0,0,0.9);">
-            <!-- CROSS BUTTON -->
-            <button type="button" onclick="closeAdAndReward()" style="position:absolute; top:-12px; right:-12px; width:34px; height:34px; border-radius:50%; background:#ef4444; color:#fff; border:2px solid #fff; font-size:16px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.5);">✕</button>
+            
+            <!-- CROSS BUTTON (Hidden for 30s) -->
+            <button id="ad-cross-btn" type="button" onclick="closeAdAndReward()" style="display:none; position:absolute; top:-12px; right:-12px; width:34px; height:34px; border-radius:50%; background:#ef4444; color:#fff; border:2px solid #fff; font-size:16px; font-weight:900; cursor:pointer; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.5); z-index:10;">✕</button>
 
-            <p style="font-size:12px; color:#94a3b8; font-weight:800; text-transform:uppercase; margin-bottom:8px;">Special Reward</p>
+            <p style="font-size:12px; color:#94a3b8; font-weight:800; text-transform:uppercase; margin-bottom:8px;">SPONSORED REWARD VIDEO</p>
 
-            <!-- ADSTERRA 300x250 IN-APP AD -->
-            <div style="width:300px; height:250px; background:#020617; border-radius:12px; overflow:hidden; margin:0 auto 10px auto; display:flex; align-items:center; justify-content:center;">
-                <iframe srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:#020617;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':250,'width':300,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="300" height="250" frameborder="0" scrolling="no" style="border:none;"></iframe>
+            <!-- AD CONTAINER -->
+            <div id="ad-frame-wrapper" style="width:300px; height:250px; background:#020617; border-radius:12px; overflow:hidden; margin:0 auto 10px auto; display:flex; align-items:center; justify-content:center;">
+                <iframe id="ad-iframe" srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:#020617;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':250,'width':300,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="300" height="250" frameborder="0" scrolling="no" style="border:none;"></iframe>
             </div>
 
-            <p style="font-size:12px; color:#facc15; font-weight:800; margin-bottom:12px;">Reward: +100 Coins 🎉</p>
+            <!-- COUNTDOWN DISPLAY -->
+            <div id="ad-status-msg" style="font-size:13px; color:#facc15; font-weight:800; margin-bottom:10px;">
+                Ad chal rahi hai... Reward in: <span id="ad-sec-count" style="color:#38bdf8; font-size:16px;">30</span>s
+            </div>
             
-            <button type="button" onclick="closeAdAndReward()" style="background:#10b981; color:#ffffff; border:none; padding:10px 16px; font-size:13px; font-weight:800; border-radius:12px; width:100%; cursor:pointer;">
-                ✕ CLOSE & CLAIM REWARD
+            <!-- CLAIM BUTTON (Disabled during 30s) -->
+            <button id="ad-claim-btn" type="button" disabled style="background:#334155; color:#94a3b8; border:none; padding:10px 16px; font-size:13px; font-weight:800; border-radius:12px; width:100%; cursor:not-allowed;">
+                ⏳ Please Wait (30s)...
             </button>
         </div>
     </div>
@@ -737,16 +742,71 @@ function claimDailyReward() {
 }
 
 // ==========================================
-// 3. REWARDED AD CONTROLLER (IN-APP CROSS)
+// 3. REWARDED AD CONTROLLER (30s LOCKED IMPRESSION)
 // ==========================================
+let adTimer = null;
+let adTimeLeft = 30;
+
 function startWatchingAd() {
     const modal = document.getElementById('ad-modal');
-    if (modal) {
-        modal.style.display = 'flex';
+    const crossBtn = document.getElementById('ad-cross-btn');
+    const claimBtn = document.getElementById('ad-claim-btn');
+    const secCount = document.getElementById('ad-sec-count');
+    const statusMsg = document.getElementById('ad-status-msg');
+    const adIframe = document.getElementById('ad-iframe');
+
+    if (!modal) return;
+
+    // Reset iframe to trigger fresh impression
+    if (adIframe) {
+        adIframe.srcdoc = adIframe.srcdoc;
     }
+
+    modal.style.display = 'flex';
+    adTimeLeft = 30;
+
+    // 30s tak Cross aur Claim dono locked
+    if (crossBtn) crossBtn.style.display = 'none';
+    if (claimBtn) {
+        claimBtn.disabled = true;
+        claimBtn.style.background = '#334155';
+        claimBtn.style.color = '#94a3b8';
+        claimBtn.style.cursor = 'not-allowed';
+        claimBtn.innerText = "⏳ Please Wait (30s)...";
+        claimBtn.onclick = null;
+    }
+    if (secCount) secCount.innerText = adTimeLeft;
+    if (statusMsg) {
+        statusMsg.style.display = 'block';
+        statusMsg.innerHTML = `Ad chal rahi hai... Reward in: <span id="ad-sec-count" style="color:#38bdf8; font-size:16px;">30</span>s`;
+    }
+
+    clearInterval(adTimer);
+    adTimer = setInterval(() => {
+        adTimeLeft--;
+        const liveSec = document.getElementById('ad-sec-count');
+        if (liveSec) liveSec.innerText = adTimeLeft;
+        if (claimBtn) claimBtn.innerText = `⏳ Please Wait (${adTimeLeft}s)...`;
+
+        // 30 seconds khatam hone par unlock
+        if (adTimeLeft <= 0) {
+            clearInterval(adTimer);
+            if (statusMsg) statusMsg.innerHTML = "🎉 <span style='color:#34d399;'>Ad Completed! Reward Ready!</span>";
+            if (crossBtn) crossBtn.style.display = 'flex';
+            if (claimBtn) {
+                claimBtn.disabled = false;
+                claimBtn.style.background = '#10b981';
+                claimBtn.style.color = '#ffffff';
+                claimBtn.style.cursor = 'pointer';
+                claimBtn.innerText = "✕ CLOSE & CLAIM +100 COINS 🎉";
+                claimBtn.onclick = closeAdAndReward;
+            }
+        }
+    }, 1000);
 }
 
 function closeAdAndReward() {
+    clearInterval(adTimer);
     const modal = document.getElementById('ad-modal');
     if (modal) modal.style.display = 'none';
 
@@ -757,7 +817,7 @@ function closeAdAndReward() {
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
     loadProfile();
 
-    alert("🎉 Reward Claimed! +100 Coins credited to your wallet!");
+    alert("🎉 Ad Verified (30s Complete)! +100 Coins credited to your wallet!");
 }
 
 // PROFILE EDIT MODAL
