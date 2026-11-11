@@ -1,5 +1,5 @@
 // ========================================================
-// MATCH VICTORY & SMARTLINK FULL-PAGE AD MODULE
+// MATCH VICTORY & FULL-SCREEN INTERSTITIAL VIDEO AD MODULE
 // ========================================================
 
 (function initMatchVictorySystem() {
@@ -80,7 +80,7 @@
         `;
         document.body.appendChild(vicModal);
 
-        // 2. FULL SCREEN TRANSITION & COUNTDOWN LOCK SCREEN
+        // 2. FULL SCREEN MOBILE VIDEO AD EXPERIENCE
         const adScreen = document.createElement('div');
         adScreen.id = 'victory-exit-ad-screen';
         adScreen.style.cssText = `
@@ -88,45 +88,52 @@
             position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
-            background: #020617;
+            background: #000000;
             z-index: 9999999;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 24px 16px;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
         `;
 
         adScreen.innerHTML = `
-            <!-- TOP BAR -->
-            <div style="width: 100%; max-width: 440px; display: flex; justify-content: space-between; align-items: center;">
-                <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; color: #cbd5e1;">
-                    SPONSORED CAMPAIGN
+            <!-- FLOATING TOP BAR -->
+            <div style="position: absolute; top: 12px; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; box-sizing: border-box; z-index: 100;">
+                <div style="background: rgba(0, 0, 0, 0.65); border: 1px solid rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; color: #e2e8f0; backdrop-filter: blur(4px);">
+                    SPONSORED VIDEO
                 </div>
-                <div id="vic-exit-count-badge" style="background: rgba(0, 0, 0, 0.8); border: 1px solid #facc15; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 900; color: #facc15;">
-                    Closing in: <span id="vic-exit-count" style="color: #38bdf8;">5</span>s
+                <div id="vic-exit-count-badge" style="background: rgba(0, 0, 0, 0.7); border: 1.5px solid #facc15; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; color: #facc15; backdrop-filter: blur(4px);">
+                    Reward in: <span id="vic-exit-count" style="color: #38bdf8;">5</span>s
                 </div>
-                <button id="vic-ad-cross" type="button" style="display: none; width: 38px; height: 38px; border-radius: 50%; background: #ef4444; color: #fff; border: 2px solid #fff; font-size: 18px; font-weight: 900; cursor: pointer; align-items: center; justify-content: center; box-shadow: 0 0 16px rgba(239, 68, 68, 0.9);">✕</button>
+                <button id="vic-ad-cross" type="button" style="display: none; width: 36px; height: 36px; border-radius: 50%; background: #ef4444; color: #fff; border: 2px solid #fff; font-size: 18px; font-weight: 900; cursor: pointer; align-items: center; justify-content: center; box-shadow: 0 0 16px rgba(239, 68, 68, 0.9);">✕</button>
             </div>
 
-            <!-- CENTER CONTENT -->
-            <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; max-width: 340px;">
-                <div style="font-size: 52px; animation: pulse 1.5s infinite;">🎁</div>
-                <h3 style="font-size: 20px; color: #fff; font-weight: 900; margin: 0;">Opening Sponsored Offer...</h3>
-                <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin: 0;">Special partner rewards are opening in full screen. You can return to the lobby once the timer ends.</p>
+            <!-- FULL SCREEN VIDEO AD BACKGROUND -->
+            <div id="ad-video-wrapper" style="width: 100vw; height: 100vh; position: absolute; top:0; left:0; display: flex; align-items: center; justify-content: center; background: #000; cursor: pointer;">
+                <video id="vic-video-player" autoplay playsinline muted loop style="width: 100%; height: 100%; object-fit: cover;">
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+                </video>
+                <!-- OVERLAY CLICK TO CONVERT (High CPM) -->
+                <div style="position: absolute; bottom: 85px; background: rgba(15, 23, 42, 0.85); border: 1.5px solid #38bdf8; padding: 8px 18px; border-radius: 25px; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.5);">
+                    <span>🛍️ Tap to Open Exclusive Deals</span>
+                </div>
             </div>
 
-            <!-- BOTTOM BUTTON -->
-            <div style="width: 100%; max-width: 360px;">
-                <button id="vic-continue-btn" type="button" disabled style="background: #1e293b; color: #64748b; border: 1px solid #334155; padding: 14px; font-size: 15px; font-weight: 900; border-radius: 16px; width: 100%; cursor: not-allowed;">
-                    ⏳ Please Wait (5s)...
+            <!-- BOTTOM SKIP / CONTINUE -->
+            <div style="position: absolute; bottom: 16px; width: 100%; max-width: 320px; z-index: 100;">
+                <button id="vic-continue-btn" type="button" disabled style="background: rgba(30, 41, 59, 0.9); color: #94a3b8; border: 1px solid #475569; padding: 12px; font-size: 14px; font-weight: 800; border-radius: 14px; width: 100%; cursor: not-allowed; backdrop-filter: blur(6px);">
+                    ⏳ Video Playing (5s)...
                 </button>
             </div>
         `;
         document.body.appendChild(adScreen);
 
         document.getElementById('vic-home-trigger-btn').addEventListener('click', triggerFullScreenAd);
+        document.getElementById('ad-video-wrapper').addEventListener('click', () => {
+            window.open(SMARTLINK_URL, '_blank');
+        });
         document.getElementById('vic-ad-cross').addEventListener('click', goHome);
         document.getElementById('vic-continue-btn').addEventListener('click', goHome);
     }
@@ -138,27 +145,30 @@
         const contBtn = document.getElementById('vic-continue-btn');
         const countBadge = document.getElementById('vic-exit-count-badge');
         const counterText = document.getElementById('vic-exit-count');
+        const video = document.getElementById('vic-video-player');
 
         adScreen.style.display = 'flex';
         exitTimeLeft = 5;
 
-        // Smartlink open karna naye window/tab me
-        window.open(SMARTLINK_URL, '_blank');
+        if (video) {
+            video.currentTime = 0;
+            video.play().catch(() => {});
+        }
 
         crossBtn.style.display = 'none';
         countBadge.style.display = 'block';
         contBtn.disabled = true;
-        contBtn.style.background = '#1e293b';
-        contBtn.style.color = '#64748b';
+        contBtn.style.background = 'rgba(30, 41, 59, 0.9)';
+        contBtn.style.color = '#94a3b8';
         contBtn.style.cursor = 'not-allowed';
-        contBtn.innerText = '⏳ Please Wait (5s)...';
+        contBtn.innerText = '⏳ Video Playing (5s)...';
         counterText.innerText = exitTimeLeft;
 
         clearInterval(exitTimer);
         exitTimer = setInterval(() => {
             exitTimeLeft--;
             counterText.innerText = exitTimeLeft;
-            contBtn.innerText = `⏳ Please Wait (${exitTimeLeft}s)...`;
+            contBtn.innerText = `⏳ Video Playing (${exitTimeLeft}s)...`;
 
             if (exitTimeLeft <= 0) {
                 clearInterval(exitTimer);
@@ -168,7 +178,7 @@
                 contBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
                 contBtn.style.color = '#ffffff';
                 contBtn.style.cursor = 'pointer';
-                contBtn.innerText = 'CONTINUE TO MAIN MENU 🏠';
+                contBtn.innerText = 'RETURN TO LOBBY 🏠';
             }
         }, 1000);
     }
@@ -185,7 +195,6 @@
             finishedRankings.push(winnerPlayer);
         }
 
-        // Winner reward (+100 Coins)
         if (finishedRankings.length === 1) {
             try {
                 const PROFILE_KEY = "ludo_user_profile_v4";
