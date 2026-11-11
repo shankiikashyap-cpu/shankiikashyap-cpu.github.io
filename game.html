@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-<script src="ads.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>3D Ludo Arena</title>
@@ -17,6 +16,36 @@
             background: radial-gradient(circle at center, #1e3a8a 0%, #09132e 65%, #030712 100%) !important;
             font-family: 'Segoe UI', Tahoma, sans-serif;
             user-select: none;
+        }
+
+        /* TOP FIXED HEADER AD BAR */
+        #top-ad-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 52px;
+            background: rgba(10, 15, 30, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+        }
+
+        /* BOTTOM FIXED FOOTER AD BAR */
+        #bottom-ad-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100vw;
+            height: 54px;
+            background: rgba(10, 15, 30, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
         }
 
         /* DYNAMIC CORNER HUD BOX */
@@ -36,23 +65,12 @@
             width: 165px;
             transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        /* Home button ko bottom ad banner se upar lana */
-.home-btn, a[href*="index"], a[href*="home"], #home-btn, .back-btn {
-    position: fixed !important;
-    bottom: 68px !important;
-    left: 14px !important;
-    z-index: 100001 !important;
-}
 
-/* Purani bonus bar patti ko band karna */
-.bonus-reward-bar, #bottom-bar, .bottom-bar, div:has(.bonus-reward) {
-    display: none !important;
-}
-
-        .pos-red { top: 68px !important; left: 16px; border-color: rgba(239, 68, 68, 0.6) !important; }
-        .pos-green { top: 24px; right: 16px; border-color: rgba(34, 197, 94, 0.6) !important; }
-        .pos-yellow { bottom: 75px; right: 16px; border-color: rgba(234, 179, 8, 0.6) !important; }
-        .pos-blue { bottom: 75px; left: 16px; border-color: rgba(59, 130, 246, 0.6) !important; }
+        /* Positions adjusted for Top & Bottom Ads */
+        .pos-red { top: 62px !important; left: 16px; border-color: rgba(239, 68, 68, 0.6) !important; }
+        .pos-green { top: 62px !important; right: 16px; border-color: rgba(34, 197, 94, 0.6) !important; }
+        .pos-yellow { bottom: 65px !important; right: 16px; border-color: rgba(234, 179, 8, 0.6) !important; }
+        .pos-blue { bottom: 65px !important; left: 16px; border-color: rgba(59, 130, 246, 0.6) !important; }
 
         .turn-title { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; font-weight: 700; }
         .turn-row { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 7px; }
@@ -76,16 +94,16 @@
         #roll-btn:disabled { background: #475569; cursor: not-allowed; box-shadow: none; transform: none; }
         #dice-result { font-size: 12px; color: #cbd5e1; font-weight: bold; }
 
-        /* FLOATING CIRCULAR BOTTOM HOME BUTTON */
+        /* FLOATING CIRCULAR BOTTOM HOME BUTTON (SAFELY ABOVE FOOTER AD) */
         #exit-home-btn {
-            position: absolute;
-            bottom: 18px;
-            left: 18px;
-            z-index: 30;
+            position: fixed;
+            bottom: 66px;
+            left: 16px;
+            z-index: 100000;
             width: 46px;
             height: 46px;
             border-radius: 50%;
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.95);
             border: 2px solid rgba(255, 255, 255, 0.22);
             color: #ffffff;
             display: flex;
@@ -120,6 +138,17 @@
 </head>
 <body>
 
+<!-- 1. TOP HEADER ADSTERRA BANNER -->
+<div id="top-ad-header">
+    <iframe srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:transparent;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;overflow:hidden;"></iframe>
+</div>
+
+<!-- 2. BOTTOM FOOTER ADSTERRA BANNER -->
+<div id="bottom-ad-footer">
+    <iframe srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:transparent;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;overflow:hidden;"></iframe>
+</div>
+
+<!-- 3. HOME BUTTON (ABOVE FOOTER AD) -->
 <button id="exit-home-btn" title="Dashboard" onclick="exitToDashboard()">
     <svg viewBox="0 0 24 24">
         <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
@@ -155,7 +184,6 @@ const ADMOB_CONFIG = {
 
 let isInterstitialReady = false;
 
-// 1. Bottom Banner Ad
 async function initAdMobBanner() {
     try {
         const AdMob = window.Capacitor?.Plugins?.AdMob;
@@ -175,7 +203,6 @@ async function initAdMobBanner() {
     }
 }
 
-// 2. Preload Interstitial (Match chalte waqt background me ad ready karega)
 async function preloadGameOverInterstitial() {
     try {
         const AdMob = window.Capacitor?.Plugins?.AdMob;
@@ -192,7 +219,6 @@ async function preloadGameOverInterstitial() {
     }
 }
 
-// 3. Trigger Interstitial on Match Complete
 async function triggerGameOverAd() {
     try {
         const AdMob = window.Capacitor?.Plugins?.AdMob;
@@ -215,7 +241,7 @@ const sixAudio = new Audio('yeahboi.mp3'); sixAudio.preload = 'auto';
 const cutAudio = new Audio('cut.mp3'); cutAudio.preload = 'auto';
 const clickAudio = new Audio('click.mp3'); clickAudio.preload = 'auto';
 const niceAudio = new Audio('nice.mp3'); niceAudio.preload = 'auto';
-const winAudio = new Audio('finalcal.mp3'); winAudio.preload = 'auto';
+const winAudio = new Audio('finalcel.mp3'); winAudio.preload = 'auto';
 
 function playSound(audio) {
     try {
@@ -568,8 +594,6 @@ function triggerWinnerCelebration(winnerTeam) {
     const banner = document.getElementById('winner-banner');
 
     playSound(winAudio);
-
-    // 🚀 SHOW INTERSTITIAL AD ON MATCH COMPLETION
     setTimeout(triggerGameOverAd, 1200);
 
     let subTextHtml = `Champion of 3D Ludo Arena!`;
@@ -869,7 +893,7 @@ function updateTurnDisplay(team, isBonus) {
         }, 750);
     } else {
         rollBtn.disabled = false;
-        msgEl.innerText = isBonus ? "🎉 Bonus Turn! Roll karo!" : `Turn: ${team} • Roll karo!`;
+        msgEl.innerText = isBonus ? "🎉 Bonus Turn! Roll karo!" : `Turn: ${team} (Roll karo!)`;
     }
 }
 
@@ -1112,53 +1136,5 @@ if (wasRestored) {
     msgEl.innerText = "Match Resumed! Turn: " + activeTeam;
 }
 </script>
-
-<!-- BOTTOM GAMEPLAY BANNER AD -->
-<div id="game-bottom-banner" onclick="openBannerAd()" style="
-    position: fixed;
-    bottom: 12px;
-    left: 85px;
-    right: 15px;
-    height: 52px;
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
-    border: 1px solid rgba(250, 204, 21, 0.4);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 14px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    cursor: pointer;
-    user-select: none;">
-    
-    <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 20px;">🎁</span>
-        <div style="display: flex; flex-direction: column;">
-            <span style="color: #facc15; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;">BONUS REWARD</span>
-            <span style="color: #94a3b8; font-size: 10px;">Tap to claim free perks</span>
-        </div>
-    </div>
-    
-    <div style="
-        background: #facc15;
-        color: #0f172a;
-        font-size: 11px;
-        font-weight: 800;
-        padding: 5px 10px;
-        border-radius: 6px;
-        letter-spacing: 0.5px;">
-        CLAIM
-    </div>
-</div>
-
-<script>
-function openBannerAd() {
-    const bannerUrl = "https://uplcm.com/4/12236000";
-    window.open(bannerUrl, '_blank');
-}
-</script>
-
-
 </body>
 </html>
