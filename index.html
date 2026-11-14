@@ -235,18 +235,10 @@
             position: relative;
         }
 
-        .mode-card-disabled {
-            background: linear-gradient(180deg, #18202c 0%, #0b111e 100%);
-            border: 1.5px solid rgba(148, 163, 184, 0.2);
-            filter: grayscale(0.85);
-            opacity: 0.85;
-            cursor: not-allowed;
-        }
-
-        .under-process-badge {
-            background: rgba(245, 158, 11, 0.18);
-            border: 1px solid #f59e0b;
-            color: #fbbf24;
+        .live-online-badge {
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid #10b981;
+            color: #34d399;
             font-size: 11px;
             font-weight: 800;
             padding: 3px 10px;
@@ -276,20 +268,14 @@
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+            transition: transform 0.12s ease;
         }
         .main-btn:active { transform: scale(0.98); }
 
         .btn-friends { background: linear-gradient(135deg, #f59e0b, #ea580c); border: 1.5px solid rgba(255, 255, 255, 0.2); }
         .btn-vs-bot  { background: linear-gradient(135deg, #6366f1, #a855f7); border: 1.5px solid rgba(255, 255, 255, 0.2); }
-        
-        .btn-disabled {
-            background: #334155 !important;
-            color: #94a3b8 !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            cursor: not-allowed !important;
-            box-shadow: none !important;
-            transform: none !important;
-        }
+        .btn-create-online { background: linear-gradient(135deg, #ef4444, #dc2626); border: 1.5px solid rgba(255, 255, 255, 0.22); }
+        .btn-join-online   { background: linear-gradient(135deg, #0ea5e9, #2563eb); border: 1.5px solid rgba(255, 255, 255, 0.22); }
 
         .tag {
             font-size: 11px;
@@ -418,17 +404,17 @@
             </button>
         </div>
 
-        <div class="mode-card mode-card-disabled">
+        <div class="mode-card" style="border-color: rgba(16, 185, 129, 0.45);">
             <div class="card-header-label">🌐 Online Multiplayer</div>
-            <div class="under-process-badge">🔒 Under Process • Coming Next Week</div>
+            <div class="live-online-badge">🟢 LIVE • Free Live Voice Chat 🎙️</div>
             <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 2px;">
-                <button type="button" class="main-btn btn-disabled" onclick="showUnderProcessMsg()">
+                <button type="button" class="main-btn btn-create-online" onclick="window.location.href='online_lobby.html'">
                     <span>➕ Create Room</span>
-                    <span class="tag">Locked</span>
+                    <span class="tag">FREE 🎲</span>
                 </button>
-                <button type="button" class="main-btn btn-disabled" onclick="showUnderProcessMsg()">
+                <button type="button" class="main-btn btn-join-online" onclick="window.location.href='online_lobby.html'">
                     <span>🔗 Join Room</span>
-                    <span class="tag">Locked</span>
+                    <span class="tag">4-Digit Code</span>
                 </button>
             </div>
         </div>
@@ -477,33 +463,27 @@
         </div>
     </div>
 
-    <!-- FULL SCREEN REWARDED VIDEO AD STAGE (MOBILE APP STYLE) -->
+    <!-- FULL SCREEN REWARDED VIDEO AD STAGE -->
     <div id="ad-modal" class="modal-overlay" style="padding:0; background:#020617; z-index:99999;">
         <div style="position:relative; width:100vw; height:100vh; max-width:440px; background:radial-gradient(circle at center, #0f172a 0%, #020617 100%); display:flex; flex-direction:column; justify-content:space-between; align-items:center; padding:20px 16px; box-sizing:border-box;">
             
-            <!-- TOP BAR (Status + Cross) -->
             <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
                 <div style="background:rgba(15,23,42,0.85); border:1px solid #334155; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:800; color:#94a3b8; letter-spacing:1px;">
                     SPONSORED REWARD AD
                 </div>
-                
-                <!-- RED CROSS (30s complete hone par appear hoga) -->
                 <button id="ad-cross-btn" type="button" onclick="closeAdAndReward()" style="display:none; width:38px; height:38px; border-radius:50%; background:#ef4444; color:#fff; border:2px solid #ffffff; font-size:18px; font-weight:900; cursor:pointer; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(239,68,68,0.85); z-index:20;">✕</button>
             </div>
 
-            <!-- CENTER FULL AD THEATER -->
             <div style="width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; margin:auto 0;">
                 <div style="font-size:38px; filter:drop-shadow(0 0 10px #f59e0b);">🎬</div>
                 <div id="ad-status-msg" style="font-size:15px; color:#facc15; font-weight:800; text-align:center;">
                     Ad chal rahi hai... Reward in: <span id="ad-sec-count" style="color:#38bdf8; font-size:22px; font-weight:900;">30</span>s
                 </div>
 
-                <!-- AD DISPLAY BOX 1 -->
                 <div style="width:100%; max-width:320px; height:60px; background:#000; border:1px solid #334155; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 25px rgba(0,0,0,0.8);">
                     <iframe id="ad-iframe-1" srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:#000;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;"></iframe>
                 </div>
 
-                <!-- AD DISPLAY BOX 2 -->
                 <div style="width:100%; max-width:320px; height:60px; background:#000; border:1px solid #334155; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 25px rgba(0,0,0,0.8);">
                     <iframe id="ad-iframe-2" srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:#000;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;"></iframe>
                 </div>
@@ -511,7 +491,6 @@
                 <div style="font-size:12px; color:#94a3b8; font-weight:700;">Reward: <span style="color:#34d399;">+100 Gold Coins</span></div>
             </div>
 
-            <!-- BOTTOM CLAIM BUTTON -->
             <div style="width:100%; max-width:360px;">
                 <button id="ad-claim-btn" type="button" disabled style="background:#1e293b; color:#64748b; border:1px solid #334155; padding:14px; font-size:15px; font-weight:800; border-radius:16px; width:100%; cursor:not-allowed; box-shadow:none;">
                     ⏳ Please Wait (30s)...
@@ -534,15 +513,9 @@ function playClickSound() {
 }
 
 document.addEventListener('pointerdown', (e) => {
-    const target = e.target.closest('button, .main-btn, .sub-btn, .avatar-choice, .profile-area, .gear-btn, .btn-free-reward');
-    if (target) {
-        playClickSound();
-    }
+    const target = e.target.closest('button, .main-btn, .avatar-choice, .profile-area, .gear-btn, .btn-free-reward');
+    if (target) playClickSound();
 });
-
-function showUnderProcessMsg() {
-    alert("🛠️ Online Multiplayer is currently under process!\nThis feature will be unlocked in next week's update. Stay tuned!");
-}
 
 // 1. THREE.JS 3D LOGO
 (function init3DLogo() {
@@ -558,8 +531,7 @@ function showUnderProcessMsg() {
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    const ambLight = new THREE.AmbientLight(0xffffff, 0.9);
-    scene.add(ambLight);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
 
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.25);
     dirLight.position.set(6, 12, 7);
@@ -604,12 +576,10 @@ function showUnderProcessMsg() {
     boardGroup.rotation.y = -0.45;
     boardGroup.position.set(0, -0.4, 0);
 
-    const baseMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.2 });
-    const boardBase = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.18, 3.4), baseMat);
+    const boardBase = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.18, 3.4), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.2 }));
     boardGroup.add(boardBase);
 
-    const deckMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.2 });
-    const boardDeck = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.2, 3.2), deckMat);
+    const boardDeck = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.2, 3.2), new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.2 }));
     boardDeck.position.y = 0.02;
     boardGroup.add(boardDeck);
 
@@ -621,13 +591,11 @@ function showUnderProcessMsg() {
     ];
 
     colors.forEach(c => {
-        const padMat = new THREE.MeshStandardMaterial({ color: c.hex, roughness: 0.2, metalness: 0.1 });
-        const pad = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.22, 1.2), padMat);
+        const pad = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.22, 1.2), new THREE.MeshStandardMaterial({ color: c.hex, roughness: 0.2, metalness: 0.1 }));
         pad.position.set(c.x, 0.03, c.z);
         boardGroup.add(pad);
 
-        const dotMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        const dot = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.24, 20), dotMat);
+        const dot = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.24, 20), new THREE.MeshStandardMaterial({ color: 0xffffff }));
         dot.position.set(c.x, 0.04, c.z);
         boardGroup.add(dot);
     });
@@ -643,14 +611,10 @@ function showUnderProcessMsg() {
         return pGrp;
     }
 
-    boardGroup.add(makeMiniPawn(0xef4444)); 
-    boardGroup.add(makeMiniPawn(0xeab308)); 
-    boardGroup.add(makeMiniPawn(0x3b82f6)); 
-    boardGroup.add(makeMiniPawn(0x22c55e)); 
+    boardGroup.add(makeMiniPawn(0xef4444), makeMiniPawn(0xeab308), makeMiniPawn(0x3b82f6), makeMiniPawn(0x22c55e));
 
     const diceMaterials = Array(6).fill(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 }));
-    const diceGeo = new THREE.BoxGeometry(0.72, 0.72, 0.72);
-    const centerDice = new THREE.Mesh(diceGeo, diceMaterials);
+    const centerDice = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.72, 0.72), diceMaterials);
     centerDice.position.set(0, 0.75, 0);
     boardGroup.add(centerDice);
 
@@ -702,7 +666,6 @@ function getProfile() {
 
 function loadProfile() {
     const data = getProfile();
-
     if (!data.coins || Number(data.coins) < 50) {
         data.coins = 500;
         localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
@@ -723,7 +686,6 @@ function startPaidGame(redirectUrl) {
         alert("⚠️ Kam se kam 50 coins hone chahiye match lagane ke liye!\nUpar '+ Free' button se ad dekh kar free coins pao!");
         return;
     }
-
     data.coins -= 50;
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
     setTimeout(() => { window.location.href = redirectUrl; }, 120);
@@ -734,9 +696,7 @@ const CLAIM_INTERVAL_MS = 24 * 60 * 60 * 1000;
 function checkDailyLoginBonus() {
     const data = getProfile();
     const lastClaim = Number(data.lastDailyClaimTimestamp || 0);
-    const now = Date.now();
-
-    if (!lastClaim || (now - lastClaim) >= CLAIM_INTERVAL_MS) {
+    if (!lastClaim || (Date.now() - lastClaim) >= CLAIM_INTERVAL_MS) {
         setTimeout(() => {
             const modal = document.getElementById('daily-modal');
             if (modal) modal.style.display = 'flex';
@@ -747,22 +707,16 @@ function checkDailyLoginBonus() {
 function claimDailyReward() {
     try { niceAudio.play().catch(()=>{}); } catch(e){}
     const data = getProfile();
-    
     data.coins = Number(data.coins || 0) + 50;
     data.lastDailyClaimTimestamp = Date.now();
-    
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
     loadProfile();
-    
     const modal = document.getElementById('daily-modal');
     if (modal) modal.style.display = 'none';
-    
     alert("🎉 Daily Login Reward Claimed! +50 Coins credited!");
 }
 
-// ==========================================
-// 3. REWARDED AD CONTROLLER (FULL SCREEN 30s)
-// ==========================================
+// 3. REWARDED AD CONTROLLER
 let adTimer = null;
 let adTimeLeft = 30;
 
@@ -776,15 +730,12 @@ function startWatchingAd() {
     const adIframe2 = document.getElementById('ad-iframe-2');
 
     if (!modal) return;
-
-    // Refresh iframes to ensure fresh ad calls
     if (adIframe1) adIframe1.srcdoc = adIframe1.srcdoc;
     if (adIframe2) adIframe2.srcdoc = adIframe2.srcdoc;
 
     modal.style.display = 'flex';
     adTimeLeft = 30;
 
-    // 30 seconds tak Cross aur Claim dono locked
     if (crossBtn) crossBtn.style.display = 'none';
     if (claimBtn) {
         claimBtn.disabled = true;
@@ -807,7 +758,6 @@ function startWatchingAd() {
         if (liveSec) liveSec.innerText = adTimeLeft;
         if (claimBtn) claimBtn.innerText = `⏳ Please Wait (${adTimeLeft}s)...`;
 
-        // 30 seconds poore hone par unlock
         if (adTimeLeft <= 0) {
             clearInterval(adTimer);
             if (statusMsg) statusMsg.innerHTML = "🎉 <span style='color:#34d399;'>Ad Complete! Claim Your Reward</span>";
@@ -829,14 +779,12 @@ function closeAdAndReward() {
     clearInterval(adTimer);
     const modal = document.getElementById('ad-modal');
     if (modal) modal.style.display = 'none';
-
     try { niceAudio.play().catch(()=>{}); } catch(e){}
 
     const data = getProfile();
     data.coins = Number(data.coins || 0) + 100;
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
     loadProfile();
-
     alert("🎉 Ad Verified! +100 Coins aapke wallet me add ho gaye!");
 }
 
@@ -854,10 +802,8 @@ function closeProfileModal() {
 
 function selectAvatar(emoji) {
     selectedAvatarTemp = emoji;
-    const choices = document.querySelectorAll('.avatar-choice');
-    choices.forEach(c => {
-        if (c.innerText === emoji) c.classList.add('active');
-        else c.classList.remove('active');
+    document.querySelectorAll('.avatar-choice').forEach(c => {
+        c.classList.toggle('active', c.innerText === emoji);
     });
 }
 
@@ -877,54 +823,6 @@ function saveProfileData() {
 
 loadProfile();
 checkDailyLoginBonus();
-
-// ==========================================
-// IN-APP VERSION AUTO-CHECK CONTROLLER
-// ==========================================
-const CURRENT_APP_VERSION = "1.0.0";
-const REMOTE_VERSION_URL = "https://gist.githubusercontent.com/shankiikashyap-cpu/5e9702719e5d3cbe9e93994080d930e0/raw/version.json";
-
-let apkDownloadLink = "";
-
-async function checkAppUpdate() {
-    try {
-        const res = await fetch(REMOTE_VERSION_URL + "?t=" + Date.now());
-        if (!res.ok) return;
-
-        const data = await res.json();
-
-        if (data.latestVersion && data.latestVersion !== CURRENT_APP_VERSION) {
-            document.getElementById('update-title').innerText = data.title || "Naya Update Aaya Hai!";
-            document.getElementById('update-notes').innerText = data.notes || "Khelne ke liye game update karein.";
-            apkDownloadLink = data.apkUrl;
-
-            const modal = document.getElementById('update-modal');
-            if (modal) modal.style.display = 'flex';
-        }
-    } catch (err) {}
-}
-
-function triggerApkDownload() {
-    if (apkDownloadLink) {
-        window.open(apkDownloadLink, '_system');
-    }
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(checkAppUpdate, 1500);
-});
 </script>
-
-<!-- IN-APP AUTO-UPDATE POPUP DIALOG -->
-<div id="update-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,6,23,0.85); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:20px; box-sizing:border-box;">
-    <div style="background:#0f172a; border:2px solid #3b82f6; border-radius:24px; padding:28px 22px; width:100%; max-width:340px; text-align:center; color:#fff; box-shadow:0 0 35px rgba(59,130,246,0.5);">
-        <div style="font-size:42px; margin-bottom:12px;">🚀</div>
-        <h3 id="update-title" style="margin:0 0 10px 0; color:#60a5fa; font-size:20px; font-weight:800;">Naya Update Aaya Hai!</h3>
-        <p id="update-notes" style="font-size:13px; color:#cbd5e1; line-height:1.5; margin:0 0 22px 0;">Online mode khelne ke liye game update karein.</p>
-        <button id="update-btn" onclick="triggerApkDownload()" style="background:#2563eb; color:#ffffff; border:none; padding:13px 20px; font-size:15px; font-weight:800; border-radius:14px; cursor:pointer; width:100%; box-shadow:0 6px 18px rgba(37,99,235,0.45); transition:transform 0.1s;">
-            UPDATE NOW ⚡
-        </button>
-    </div>
-</div>
 </body>
 </html>
