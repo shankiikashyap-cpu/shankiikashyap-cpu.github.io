@@ -15,7 +15,6 @@
         }
         canvas { display: block; touch-action: none; -webkit-tap-highlight-color: transparent; }
 
-        /* TOP & BOTTOM ADS */
         #top-ad-header {
             position: fixed; top: 0; left: 0; width: 100vw; height: 52px;
             background: rgba(10, 15, 30, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.15);
@@ -27,7 +26,6 @@
             display: flex; align-items: center; justify-content: center; z-index: 99999;
         }
 
-        /* HUD BOX */
         #ui-bar {
             position: absolute; z-index: 20;
             background: rgba(15, 23, 42, 0.92); padding: 10px 14px; border-radius: 16px;
@@ -52,7 +50,6 @@
         #roll-btn:disabled { background: #475569; cursor: not-allowed; box-shadow: none; }
         #dice-result { font-size: 12px; color: #cbd5e1; font-weight: bold; }
 
-        /* LIVE VOICE CHAT & ROOM BADGE (TOP RIGHT) */
         #voice-panel {
             position: fixed; top: 62px; right: 14px; z-index: 100000;
             display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
@@ -69,7 +66,6 @@
         }
         #mic-btn.muted { border-color: #ef4444; color: #f87171; }
 
-        /* HOME BUTTON */
         #exit-home-btn {
             position: fixed; bottom: 66px; left: 16px; z-index: 100000;
             width: 46px; height: 46px; border-radius: 50%;
@@ -78,8 +74,6 @@
             cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.65);
         }
         #exit-home-btn svg { width: 22px; height: 22px; fill: currentColor; }
-
-        #fireworks-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; display: none; }
 
         #winner-banner {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
@@ -96,7 +90,7 @@
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
-    <script src="dice.js"></script>
+    <script src="dice.js?v=sync3"></script>
 </head>
 <body>
 
@@ -108,7 +102,6 @@
     <iframe srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:transparent;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;overflow:hidden;"></iframe>
 </div>
 
-<!-- VOICE CHAT + ROOM CODE -->
 <div id="voice-panel">
     <div class="room-tag" id="room-badge">ROOM: ----</div>
     <button id="mic-btn" class="muted" onclick="toggleVoiceChat()">🎙️ MIC OFF</button>
@@ -127,10 +120,8 @@
     </div>
     <div id="dice-result">Dice: -</div>
     <button id="roll-btn">ROLL DICE</button>
-    <div id="msg">Connecting room...</div>
+    <div id="msg">Syncing server clock...</div>
 </div>
-
-<canvas id="fireworks-canvas"></canvas>
 
 <div id="winner-banner">
     <div id="winner-title">🏆 RED WINS! 🏆</div>
@@ -140,7 +131,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, update, push, onValue, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, set, push, onValue, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyC8cR6WMmZupaQ5f7LCbtsJFz_atiEHAkA",
@@ -163,15 +154,38 @@ const oppTeam = (myTeam === 'RED') ? 'YELLOW' : 'RED';
 document.getElementById('room-badge').innerText = `ROOM: ${roomCode} (${myTeam})`;
 document.getElementById('you-label').innerText = `YOU: ${myTeam}`;
 
-const roomRef = ref(db, `rooms/${roomCode}`);
+const eventsRef = ref(db, `rooms/${roomCode}/events`);
 
-// --- AUDIO EFFECTS ---
+// --- FIREBASE SERVER CLOCK SYNC (ZERO-DRIFT SIMULTANEOUS EXECUTION) ---
+let serverTimeOffset = 0;
+onValue(ref(db, '.info/serverTimeOffset'), (snap) => {
+    serverTimeOffset = snap.val() || 0;
+});
+function getServerNow() {
+    return Date.now() + serverTimeOffset;
+}
+function runAtServerTime(targetServerTs, fn) {
+    const delay = Math.max(0, targetServerTs - getServerNow());
+    if (delay === 0) fn();
+    else setTimeout(fn, delay);
+}
+
+// --- AUDIO EFFECTS + AUTO UNLOCK ---
 const stepAudio = new Audio('step.mp3'); stepAudio.preload = 'auto';
 const sixAudio = new Audio('yeahboi.mp3'); sixAudio.preload = 'auto';
 const cutAudio = new Audio('cut.mp3'); cutAudio.preload = 'auto';
 const clickAudio = new Audio('click.mp3'); clickAudio.preload = 'auto';
 const niceAudio = new Audio('nice.mp3'); niceAudio.preload = 'auto';
 const winAudio = new Audio('finalcel.mp3'); winAudio.preload = 'auto';
+
+const allAudios = [stepAudio, sixAudio, cutAudio, clickAudio, niceAudio, winAudio];
+function unlockAllSounds() {
+    allAudios.forEach(a => {
+        a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+    });
+    window.removeEventListener('pointerdown', unlockAllSounds);
+}
+window.addEventListener('pointerdown', unlockAllSounds);
 
 function playSound(audio) {
     try { audio.currentTime = 0; const p = audio.play(); if (p !== undefined) p.catch(() => {}); } catch(e) {}
@@ -341,12 +355,13 @@ function rearrangeTileTokens(trackIdx) {
     });
 }
 
-// --- ONLINE GAMEPLAY STATE & SYNC ---
-let currentTurn = 0;
+// --- SIMULTANEOUS TIMESTAMP SYNC ENGINE ---
+let currentTurn = 0; // 0 = RED, 1 = YELLOW
 let rolledNumber = 0;
 let canPickToken = false;
 let isTokenMoving = false;
-let lastProcessedAction = 0;
+let rollPending = false;
+const processedEventKeys = new Set();
 
 const rollBtn = document.getElementById('roll-btn');
 const msgEl = document.getElementById('msg');
@@ -356,66 +371,76 @@ const diceResult = document.getElementById('dice-result');
 const uiBar = document.getElementById('ui-bar');
 
 const ludoDice = new LudoDice(scene, (val) => {
+    rollPending = false;
     rolledNumber = val;
     diceResult.innerText = `Dice: ${rolledNumber}`;
     if (rolledNumber === 6) playSound(sixAudio);
 
     const activeTeam = turnList[currentTurn];
-    if (activeTeam !== myTeam) return; // Opponent ka roll listener se handle hoga
+
+    if (activeTeam !== myTeam) {
+        const oppValid = allPawns.filter(p => p.team === oppTeam && canPawnMove(p, rolledNumber));
+        if (oppValid.length === 0) {
+            msgEl.innerText = `${oppTeam} rolled ${rolledNumber} (No move)`;
+            setTimeout(() => passTurn(false), 350);
+        } else {
+            msgEl.innerText = `${oppTeam} rolled ${rolledNumber}! Waiting move...`;
+        }
+        return;
+    }
 
     const validPawns = allPawns.filter(p => p.team === myTeam && canPawnMove(p, rolledNumber));
     if (validPawns.length === 0) {
-        msgEl.innerText = `Rolled ${rolledNumber}. Pass!`;
-        sendOnlineMove(-1, rolledNumber);
+        msgEl.innerText = `Rolled ${rolledNumber}. No moves!`;
         setTimeout(() => passTurn(false), 350);
     } else if (validPawns.length === 1) {
         msgEl.innerText = `Moving... (${rolledNumber})`;
-        sendOnlineMove(validPawns[0].id, rolledNumber);
-        executePawnMove(validPawns[0], rolledNumber);
+        publishScheduledEvent({ type: 'MOVE', team: myTeam, pawnId: validPawns[0].id, dice: rolledNumber });
     } else {
         msgEl.innerText = `Rolled ${rolledNumber}! Apni gitti chuno.`;
         canPickToken = true;
     }
 });
 
-async function sendOnlineMove(pawnId, diceVal) {
-    lastProcessedAction++;
-    await update(roomRef, {
-        lastAction: {
-            id: lastProcessedAction,
-            team: myTeam,
-            dice: diceVal,
-            pawnId: pawnId,
-            ts: Date.now()
-        }
-    });
+// Both sender & receiver execute from the SAME Firebase event at the SAME server timestamp!
+function publishScheduledEvent(payload) {
+    const startAt = getServerNow() + 260; // 260ms buffer so both phones start on exact same tick
+    const newRef = push(eventsRef);
+    set(newRef, { ...payload, startAt });
 }
 
-// Listen to Opponent Moves from Firebase
-onValue(roomRef, (snap) => {
-    const data = snap.val();
-    if (!data) return;
+onChildAdded(eventsRef, (snap) => {
+    const key = snap.key;
+    if (processedEventKeys.has(key)) return;
+    processedEventKeys.add(key);
 
-    if (data.lastAction && data.lastAction.id > lastProcessedAction) {
-        lastProcessedAction = data.lastAction.id;
-        const act = data.lastAction;
+    const ev = snap.val();
+    if (!ev) return;
 
-        if (act.team !== myTeam) {
-            rolledNumber = act.dice;
-            diceResult.innerText = `Dice: ${rolledNumber}`;
-            if (rolledNumber === 6) playSound(sixAudio);
+    if (ev.type === 'ROLL') {
+        rollPending = true;
+        rollBtn.disabled = true;
+        diceResult.innerText = "Rolling...";
+        msgEl.innerText = (ev.team === myTeam) ? "Rolling dice..." : `${ev.team} rolling dice...`;
 
-            if (act.pawnId === -1) {
-                msgEl.innerText = `${oppTeam} rolled ${rolledNumber} (No move)`;
-                setTimeout(() => passTurn(false), 400);
-            } else {
-                const oppPawn = allPawns.find(p => p.team === oppTeam && p.id === act.pawnId);
-                if (oppPawn) {
-                    msgEl.innerText = `${oppTeam} rolled ${rolledNumber}!`;
-                    executePawnMove(oppPawn, rolledNumber);
+        runAtServerTime(ev.startAt, () => {
+            ludoDice.moveToTeam(ev.team);
+            ludoDice.roll(ev.team, ev.dice);
+        });
+    } else if (ev.type === 'MOVE') {
+        runAtServerTime(ev.startAt, () => {
+            const waitDice = () => {
+                if (ludoDice.isRolling) {
+                    setTimeout(waitDice, 30);
+                    return;
                 }
-            }
-        }
+                const targetPawn = allPawns.find(p => p.team === ev.team && p.id === ev.pawnId);
+                if (targetPawn) {
+                    executePawnMove(targetPawn, ev.dice);
+                }
+            };
+            waitDice();
+        });
     }
 });
 
@@ -442,11 +467,14 @@ function canPawnMove(pawn, roll) {
 
 rollBtn.addEventListener('click', () => {
     const activeTeam = turnList[currentTurn];
-    if (activeTeam !== myTeam || ludoDice.isRolling || canPickToken || isTokenMoving) return;
+    if (activeTeam !== myTeam || rollPending || ludoDice.isRolling || canPickToken || isTokenMoving) return;
+
     playSound(clickAudio);
+    rollPending = true;
     rollBtn.disabled = true;
-    diceResult.innerText = "Rolling...";
-    ludoDice.roll(myTeam);
+
+    const fixedRoll = Math.floor(Math.random() * 6) + 1;
+    publishScheduledEvent({ type: 'ROLL', team: myTeam, dice: fixedRoll });
 });
 
 const raycaster = new THREE.Raycaster();
@@ -464,8 +492,7 @@ window.addEventListener('pointerdown', (e) => {
         if (selected && selected.team === myTeam && canPawnMove(selected, rolledNumber)) {
             playSound(clickAudio);
             canPickToken = false;
-            sendOnlineMove(selected.id, rolledNumber);
-            executePawnMove(selected, rolledNumber);
+            publishScheduledEvent({ type: 'MOVE', team: myTeam, pawnId: selected.id, dice: rolledNumber });
         }
     }
 });

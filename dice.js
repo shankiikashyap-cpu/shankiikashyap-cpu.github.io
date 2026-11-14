@@ -6,12 +6,10 @@ class LudoDice {
         this.isRolling = false;
         this.currentValue = 1;
 
-        // Audio setup with preloading
         this.rollAudio = new Audio();
         this.rollAudio.src = 'dice.mp3';
         this.rollAudio.preload = 'auto';
 
-        // Unlock audio on initial user interaction for mobile/desktop browsers
         const unlockAudio = () => {
             this.rollAudio.play().then(() => {
                 this.rollAudio.pause();
@@ -41,7 +39,7 @@ class LudoDice {
 
         this.faceRotations = {
             2: { x: 0,            y: 0, z: 0 },
-            5: { x: Math.PI,       y: 0, z: 0 },
+            5: { x: Math.PI,      y: 0, z: 0 },
             1: { x: 0,            y: 0, z: Math.PI / 2 },
             6: { x: 0,            y: 0, z: -Math.PI / 2 },
             3: { x: -Math.PI / 2, y: 0, z: 0 },
@@ -59,11 +57,9 @@ class LudoDice {
         canvas.height = 256;
         const ctx = canvas.getContext('2d');
 
-        // Rounded smooth face frame
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(0, 0, 256, 256);
 
-        // Ivory white inner die surface
         ctx.fillStyle = '#ffffff';
         if (ctx.roundRect) {
             ctx.beginPath();
@@ -73,7 +69,6 @@ class LudoDice {
             ctx.fillRect(10, 10, 236, 236);
         }
 
-        // Inner shadow edge
         ctx.strokeStyle = '#e2e8f0';
         ctx.lineWidth = 12;
         if (ctx.roundRect) {
@@ -82,7 +77,6 @@ class LudoDice {
             ctx.stroke();
         }
 
-        // Dynamic colored dots
         ctx.fillStyle = dotColor || '#ef4444';
         const d = (x, y) => {
             ctx.beginPath();
@@ -134,26 +128,24 @@ class LudoDice {
             .start();
     }
 
-    roll(team) {
+    roll(team, fixedValue = null) {
         if (this.isRolling) return;
         this.isRolling = true;
         this.currentTeam = team || this.currentTeam;
         this.updateDiceDotColor(this.currentTeam);
 
-        // Audio trigger
         try {
             this.rollAudio.currentTime = 0;
             const playPromise = this.rollAudio.play();
             if (playPromise !== undefined) {
-                playPromise.catch(err => {
-                    console.warn("Audio play notice:", err);
-                });
+                playPromise.catch(() => {});
             }
-        } catch (e) {
-            console.error("Audio error:", e);
-        }
+        } catch (e) {}
 
-        this.currentValue = Math.floor(Math.random() * 6) + 1;
+        this.currentValue = (fixedValue !== null && fixedValue >= 1 && fixedValue <= 6)
+            ? fixedValue
+            : (Math.floor(Math.random() * 6) + 1);
+
         const targetRot = this.faceRotations[this.currentValue];
         const spot = this.spots[this.currentTeam];
 
@@ -161,7 +153,6 @@ class LudoDice {
         this.mesh.rotation.y = this.mesh.rotation.y % (Math.PI * 2);
         this.mesh.rotation.z = this.mesh.rotation.z % (Math.PI * 2);
 
-        // Spin matched to 1.1s audio length (1050ms)
         new TWEEN.Tween(this.mesh.rotation)
             .to({
                 x: targetRot.x + (Math.PI * 6),
@@ -171,7 +162,6 @@ class LudoDice {
             .easing(TWEEN.Easing.Cubic.Out)
             .start();
 
-        // 550ms jump up + 500ms bounce drop = 1050ms total timing sync
         new TWEEN.Tween(this.mesh.position)
             .to({ y: 3.6 }, 550)
             .easing(TWEEN.Easing.Quadratic.Out)
