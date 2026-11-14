@@ -319,18 +319,18 @@ else if (selectedMode === 'ai' || selectedMode === '2') turnList = ["RED", "YELL
 
 const SAFE_INDEXES = [0, 8, 13, 21, 26, 34, 39, 47];
 
-// --- 2. THREE.JS 3D SCENE & RESPONSIVE MOBILE CAMERA (BIGGER BOARD) ---
+// --- 2. THREE.JS 3D SCENE & RESPONSIVE CAMERA (LARGER BOARD) ---
 const scene = new THREE.Scene();
 const isMobileDevice = window.innerHeight > window.innerWidth;
-const initialFov = isMobileDevice ? 48 : 35;
+const initialFov = isMobileDevice ? 43 : 29;
 
 const camera = new THREE.PerspectiveCamera(initialFov, window.innerWidth / window.innerHeight, 0.1, 1000);
 if (isMobileDevice) {
-    camera.position.set(0, 30, 21);
+    camera.position.set(0, 26, 18.5);
 } else {
-    camera.position.set(0, 23, 17);
+    camera.position.set(0, 20.5, 14.5);
 }
-camera.lookAt(0, -0.5, 0);
+camera.lookAt(0, -0.4, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setClearColor(0x000000, 0);
@@ -348,6 +348,10 @@ sun.shadow.mapSize.width = 2048;
 sun.shadow.mapSize.height = 2048;
 sun.shadow.camera.near = 0.5;
 sun.shadow.camera.far = 70;
+sun.shadow.camera.left = -12;
+sun.shadow.camera.right = 12;
+sun.shadow.camera.top = 12;
+sun.shadow.camera.bottom = -12;
 sun.shadow.bias = -0.0003;
 scene.add(sun);
 
@@ -941,7 +945,6 @@ const ludoDice = new LudoDice(scene, (val) => {
                 handleMove(bestPawn);
             }, 350);
         } else {
-            // Agar 1 hi gitti chalne layak hai toh bina delay turant chalao!
             if (validPawns.length === 1) {
                 msgEl.innerText = (rolledNumber === 6) ? `🎉 YEAH BOI! 6 Aaya!` : `Moving... (${rolledNumber})`;
                 handleMove(validPawns[0]);
@@ -1174,14 +1177,14 @@ function passTurn(extraRoll) {
 
 window.addEventListener('resize', () => {
     const isPortrait = window.innerHeight > window.innerWidth;
-    camera.fov = isPortrait ? 48 : 35;
+    camera.fov = isPortrait ? 43 : 29;
     camera.aspect = window.innerWidth / window.innerHeight;
     if (isPortrait) {
-        camera.position.set(0, 30, 21);
+        camera.position.set(0, 26, 18.5);
     } else {
-        camera.position.set(0, 23, 17);
+        camera.position.set(0, 20.5, 14.5);
     }
-    camera.lookAt(0, -0.5, 0);
+    camera.lookAt(0, -0.4, 0);
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
