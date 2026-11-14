@@ -448,17 +448,17 @@ function updateTurnDisplay(team, isBonus) {
     const isMyTurn = (team === myTeam);
     const hexStr = '#' + TEAMS[team].hex.toString(16).padStart(6, '0');
 
-    uiBar.className = (team === "RED") ? 'pos-red' : 'pos-yellow';
-    turnTxt.innerText = isMyTurn ? `${team} (YOU)` : `${team} (FRIEND)`;
-    turnDot.style.background = hexStr;
-    rollBtn.style.background = hexStr;
-    rollBtn.disabled = !isMyTurn;
+    uiBar.style.display = isMyTurn ? 'flex' : 'none';
 
-    msgEl.innerText = isMyTurn
-        ? (isBonus ? "🎉 Bonus Turn! Roll karo!" : "Aapki baari! ROLL DICE dabao.")
-        : `⏳ ${team} ki baari hai...`;
+    if (isMyTurn) {
+        uiBar.className = (team === "RED") ? 'pos-red' : 'pos-yellow';
+        turnTxt.innerText = `${team} (YOU)`;
+        turnDot.style.background = hexStr;
+        rollBtn.style.background = hexStr;
+        rollBtn.disabled = false;
+        msgEl.innerText = isBonus ? "🎉 Bonus Turn! Roll karo!" : "Aapki baari! ROLL DICE dabao.";
+    }
 }
-
 function canPawnMove(pawn, roll) {
     if (pawn.state === "FINISHED") return false;
     if (pawn.state === "BASE") return roll === 6;
