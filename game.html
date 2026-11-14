@@ -322,14 +322,15 @@ const SAFE_INDEXES = [0, 8, 13, 21, 26, 34, 39, 47];
 // --- 2. THREE.JS 3D SCENE & RESPONSIVE CAMERA (LARGER BOARD) ---
 const scene = new THREE.Scene();
 const isMobileDevice = window.innerHeight > window.innerWidth;
-const initialFov = isMobileDevice ? 43 : 29;
+const initialFov = isMobileDevice ? 49 : 31;
 
 const camera = new THREE.PerspectiveCamera(initialFov, window.innerWidth / window.innerHeight, 0.1, 1000);
 if (isMobileDevice) {
-    camera.position.set(0, 26, 18.5);
+    camera.position.set(0, 32, 23);
 } else {
-    camera.position.set(0, 20.5, 14.5);
+    camera.position.set(0, 21.5, 15.5);
 }
+
 camera.lookAt(0, -0.4, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -1177,12 +1178,12 @@ function passTurn(extraRoll) {
 
 window.addEventListener('resize', () => {
     const isPortrait = window.innerHeight > window.innerWidth;
-    camera.fov = isPortrait ? 43 : 29;
+    camera.fov = isPortrait ? 49 : 31;
     camera.aspect = window.innerWidth / window.innerHeight;
     if (isPortrait) {
-        camera.position.set(0, 26, 18.5);
+        camera.position.set(0, 32, 23);
     } else {
-        camera.position.set(0, 20.5, 14.5);
+        camera.position.set(0, 21.5, 15.5);
     }
     camera.lookAt(0, -0.4, 0);
     camera.updateProjectionMatrix();
