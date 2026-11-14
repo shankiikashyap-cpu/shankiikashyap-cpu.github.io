@@ -319,19 +319,27 @@ else if (selectedMode === 'ai' || selectedMode === '2') turnList = ["RED", "YELL
 
 const SAFE_INDEXES = [0, 8, 13, 21, 26, 34, 39, 47];
 
-// --- 2. THREE.JS 3D SCENE & RESPONSIVE CAMERA (LARGER BOARD) ---
+// --- 2. THREE.JS 3D SCENE & AUTO-FIT RESPONSIVE CAMERA ---
 const scene = new THREE.Scene();
-const isMobileDevice = window.innerHeight > window.innerWidth;
-const initialFov = isMobileDevice ? 49 : 31;
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-const camera = new THREE.PerspectiveCamera(initialFov, window.innerWidth / window.innerHeight, 0.1, 1000);
-if (isMobileDevice) {
-    camera.position.set(0, 32, 23);
-} else {
-    camera.position.set(0, 21.5, 15.5);
+function fitBoardCamera() {
+    const aspect = window.innerWidth / window.innerHeight;
+    const isPortrait = aspect < 1;
+    camera.aspect = aspect;
+    camera.fov = isPortrait ? 48 : 36;
+
+    const targetSpan = isPortrait ? 19.2 : 18.2;
+    const fovRad = THREE.MathUtils.degToRad(camera.fov);
+    const vDist = (targetSpan / 2) / Math.tan(fovRad / 2);
+    const hDist = (targetSpan / 2) / (Math.tan(fovRad / 2) * aspect);
+    const dist = Math.max(vDist, hDist);
+
+    camera.position.set(0, dist * 0.82, dist * 0.57);
+    camera.lookAt(0, -0.4, 0);
+    camera.updateProjectionMatrix();
 }
-
-camera.lookAt(0, -0.4, 0);
+fitBoardCamera();
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setClearColor(0x000000, 0);
@@ -1177,16 +1185,7 @@ function passTurn(extraRoll) {
 }
 
 window.addEventListener('resize', () => {
-    const isPortrait = window.innerHeight > window.innerWidth;
-    camera.fov = isPortrait ? 49 : 31;
-    camera.aspect = window.innerWidth / window.innerHeight;
-    if (isPortrait) {
-        camera.position.set(0, 32, 23);
-    } else {
-        camera.position.set(0, 21.5, 15.5);
-    }
-    camera.lookAt(0, -0.4, 0);
-    camera.updateProjectionMatrix();
+    fitBoardCamera();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
