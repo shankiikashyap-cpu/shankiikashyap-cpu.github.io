@@ -20,6 +20,12 @@
             user-select: none;
         }
 
+        canvas {
+            display: block;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         /* TOP FIXED HEADER AD BAR */
         #top-ad-header {
             position: fixed;
@@ -313,18 +319,18 @@ else if (selectedMode === 'ai' || selectedMode === '2') turnList = ["RED", "YELL
 
 const SAFE_INDEXES = [0, 8, 13, 21, 26, 34, 39, 47];
 
-// --- 2. THREE.JS 3D SCENE & RESPONSIVE MOBILE CAMERA ---
+// --- 2. THREE.JS 3D SCENE & RESPONSIVE MOBILE CAMERA (BIGGER BOARD) ---
 const scene = new THREE.Scene();
 const isMobileDevice = window.innerHeight > window.innerWidth;
-const initialFov = isMobileDevice ? 56 : 38;
+const initialFov = isMobileDevice ? 48 : 35;
 
 const camera = new THREE.PerspectiveCamera(initialFov, window.innerWidth / window.innerHeight, 0.1, 1000);
 if (isMobileDevice) {
-    camera.position.set(0, 36, 26);
+    camera.position.set(0, 30, 21);
 } else {
-    camera.position.set(0, 27, 21);
+    camera.position.set(0, 23, 17);
 }
-camera.lookAt(0, -0.6, 0);
+camera.lookAt(0, -0.5, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setClearColor(0x000000, 0);
@@ -524,6 +530,14 @@ turnList.forEach(tName => {
         head.castShadow = true;
         group.add(head);
 
+        // Bada invisible touch hitbox (Mobile par 1-tap instant selection ke liye)
+        const hitBox = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.62, 0.62, 1.5, 12),
+            new THREE.MeshBasicMaterial({ visible: false })
+        );
+        hitBox.position.y = 0.65;
+        group.add(hitBox);
+
         const bx = tData.homeBase[0] + offsets[i][0];
         const bz = tData.homeBase[1] + offsets[i][1];
         group.position.set(bx, 0.05, bz);
@@ -542,7 +556,8 @@ turnList.forEach(tName => {
         skirt.userData = pawnObj;
         body.userData = pawnObj;
         head.userData = pawnObj;
-        clickableMeshes.push(skirt, body, head);
+        hitBox.userData = pawnObj;
+        clickableMeshes.push(hitBox, skirt, body, head);
 
         allPawns.push(pawnObj);
     }
@@ -582,16 +597,15 @@ function rearrangeTileTokens(trackIdx) {
     tokensOnTile.forEach((p, idx) => {
         const off = currentOffsets[idx % currentOffsets.length];
         new TWEEN.Tween(p.group.position)
-            .to({ x: basePos[0] + off[0], z: basePos[1] + off[1] }, 150)
+            .to({ x: basePos[0] + off[0], z: basePos[1] + off[1] }, 140)
             .start();
 
         new TWEEN.Tween(p.group.scale)
-            .to({ x: targetScale, y: targetScale, z: targetScale }, 150)
+            .to({ x: targetScale, y: targetScale, z: targetScale }, 140)
             .start();
     });
 }
 
-// FIX: Home Lane (steps 51-55) me ek hi box par multiple gittiyan side-by-side dikhane ke liye
 function rearrangeHomeLaneTokens(team) {
     if (!team || !HOME_RUNS[team]) return;
     for (let step = 51; step <= 55; step++) {
@@ -607,11 +621,11 @@ function rearrangeHomeLaneTokens(team) {
         tokensOnLaneTile.forEach((p, idx) => {
             const off = currentOffsets[idx % currentOffsets.length];
             new TWEEN.Tween(p.group.position)
-                .to({ x: basePos[0] + off[0], z: basePos[1] + off[1] }, 150)
+                .to({ x: basePos[0] + off[0], z: basePos[1] + off[1] }, 140)
                 .start();
 
             new TWEEN.Tween(p.group.scale)
-                .to({ x: targetScale, y: targetScale, z: targetScale }, 150)
+                .to({ x: targetScale, y: targetScale, z: targetScale }, 140)
                 .start();
         });
     }
@@ -664,7 +678,6 @@ function triggerWinnerCelebration(winnerTeam) {
     const winnerColorHex = '#' + TEAMS[winnerTeam].hex.toString(16).padStart(6, '0');
     let subTextHtml = `Champion of 3D Ludo Arena!`;
 
-    // Dynamic Winner Title Text & Border Color Match
     const winTitleEl = document.getElementById('winner-title');
     winTitleEl.innerText = `🏆 ${winnerTeam} WINS! 🏆`;
     winTitleEl.style.color = winnerColorHex;
@@ -919,20 +932,19 @@ const ludoDice = new LudoDice(scene, (val) => {
 
     if (validPawns.length === 0) {
         msgEl.innerText = `Rolled ${rolledNumber}. Pass!`;
-        setTimeout(() => passTurn(false), 350);
+        setTimeout(() => passTurn(false), 300);
     } else {
         if (isBot) {
-            msgEl.innerText = (rolledNumber === 6) ? `🤖 YEAH BOI! Bot rolled 6!` : `🤖 Bot rolled ${rolledNumber}! Thinking...`;
+            msgEl.innerText = (rolledNumber === 6) ? `🤖 YEAH BOI! Bot rolled 6!` : `🤖 Bot rolled ${rolledNumber}!`;
             setTimeout(() => {
                 const bestPawn = pickBestBotMove(validPawns, rolledNumber);
                 handleMove(bestPawn);
-            }, 550);
+            }, 350);
         } else {
+            // Agar 1 hi gitti chalne layak hai toh bina delay turant chalao!
             if (validPawns.length === 1) {
-                msgEl.innerText = (rolledNumber === 6) ? `🎉 YEAH BOI! 6 Aaya! Moving...` : `Moving... (${rolledNumber})`;
-                setTimeout(() => {
-                    handleMove(validPawns[0]);
-                }, 350);
+                msgEl.innerText = (rolledNumber === 6) ? `🎉 YEAH BOI! 6 Aaya!` : `Moving... (${rolledNumber})`;
+                handleMove(validPawns[0]);
             } else {
                 msgEl.innerText = (rolledNumber === 6) ? `🎉 YEAH BOI! 6 Aaya! Gitti chuno.` : `Rolled ${rolledNumber}! Gitti chuno.`;
                 canPickToken = true;
@@ -966,7 +978,7 @@ function updateTurnDisplay(team, isBonus) {
             if (turnList[currentTurn] === "YELLOW" && !ludoDice.isRolling) {
                 ludoDice.roll("YELLOW");
             }
-        }, 750);
+        }, 550);
     } else {
         rollBtn.disabled = false;
         msgEl.innerText = isBonus ? "🎉 Bonus Turn! Roll karo!" : `Turn: ${team} (Roll karo!)`;
@@ -1028,6 +1040,7 @@ function handleMove(pawn) {
     isTokenMoving = true;
     canPickToken = false;
     rollBtn.disabled = true;
+    pawn.group.position.y = 0.05;
     const oldTrackIdx = pawn.trackIdx;
 
     if (pawn.state === "BASE" && rolledNumber === 6) {
@@ -1039,7 +1052,7 @@ function handleMove(pawn) {
         playSound(stepAudio);
 
         new TWEEN.Tween(pawn.group.position)
-            .to({ x: startC[0], z: startC[1], y: 0.05 }, 250)
+            .to({ x: startC[0], z: startC[1], y: 0.05 }, 200)
             .easing(TWEEN.Easing.Back.Out)
             .onComplete(() => {
                 checkCut(pawn);
@@ -1108,15 +1121,15 @@ function handleMove(pawn) {
         const target = nextInfo.coord;
 
         new TWEEN.Tween(pawn.group.position)
-            .to({ x: target[0], z: target[1] }, 130)
+            .to({ x: target[0], z: target[1] }, 95)
             .start();
 
         new TWEEN.Tween(pawn.group.position)
-            .to({ y: 1.1 }, 65)
+            .to({ y: 1.0 }, 48)
             .easing(TWEEN.Easing.Quadratic.Out)
             .chain(
                 new TWEEN.Tween(pawn.group.position)
-                    .to({ y: 0.05 }, 65)
+                    .to({ y: 0.05 }, 47)
                     .easing(TWEEN.Easing.Quadratic.In)
                     .onComplete(hopStep)
             )
@@ -1139,7 +1152,7 @@ function checkCut(activePawn) {
             other.stepCount = 0;
             other.group.scale.set(1.0, 1.0, 1.0);
             new TWEEN.Tween(other.group.position)
-                .to({ x: other.baseCoord[0], z: other.baseCoord[1], y: 0.05 }, 300)
+                .to({ x: other.baseCoord[0], z: other.baseCoord[1], y: 0.05 }, 250)
                 .easing(TWEEN.Easing.Back.Out)
                 .start();
             hasCut = true;
@@ -1161,14 +1174,14 @@ function passTurn(extraRoll) {
 
 window.addEventListener('resize', () => {
     const isPortrait = window.innerHeight > window.innerWidth;
-    camera.fov = isPortrait ? 56 : 38;
+    camera.fov = isPortrait ? 48 : 35;
     camera.aspect = window.innerWidth / window.innerHeight;
     if (isPortrait) {
-        camera.position.set(0, 36, 26);
+        camera.position.set(0, 30, 21);
     } else {
-        camera.position.set(0, 27, 21);
+        camera.position.set(0, 23, 17);
     }
-    camera.lookAt(0, -0.6, 0);
+    camera.lookAt(0, -0.5, 0);
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
@@ -1176,6 +1189,16 @@ window.addEventListener('resize', () => {
 function animate(time) {
     requestAnimationFrame(animate);
     TWEEN.update(time);
+
+    // Movable pawns ko bounce/highlight dikhana jab 2+ gittiyan chalne layak hon
+    const activeTurnTeam = turnList[currentTurn];
+    allPawns.forEach(p => {
+        if (canPickToken && !isTokenMoving && p.team === activeTurnTeam && canPawnMove(p, rolledNumber)) {
+            p.group.position.y = 0.22 + Math.abs(Math.sin(time * 0.008)) * 0.28;
+        } else if (!isTokenMoving && p.group.position.y > 0.06) {
+            p.group.position.y = 0.05;
+        }
+    });
 
     for (let i = activeParticles.length - 1; i >= 0; i--) {
         const p = activeParticles[i];
