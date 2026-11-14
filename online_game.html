@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="match_victory.js?v=final_fix_1"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>3D Ludo Online Match</title>
+    <script src="capacitor.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            background: radial-gradient(circle at center, #1e3a8a 0%, #09132e 65%, #030712 100%) !important;
+            font-family: 'Segoe UI', Tahoma, sans-serif; user-select: none;
+        }
+        canvas { display: block; touch-action: none; -webkit-tap-highlight-color: transparent; }
+
+        /* TOP & BOTTOM ADS */
+        #top-ad-header {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 52px;
+            background: rgba(10, 15, 30, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex; align-items: center; justify-content: center; z-index: 99999;
+        }
+        #bottom-ad-footer {
+            position: fixed; bottom: 0; left: 0; width: 100vw; height: 54px;
+            background: rgba(10, 15, 30, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex; align-items: center; justify-content: center; z-index: 99999;
+        }
+
+        /* HUD BOX */
+        #ui-bar {
+            position: absolute; z-index: 20;
+            background: rgba(15, 23, 42, 0.92); padding: 10px 14px; border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.65); border: 1.5px solid rgba(255,255,255,0.18);
+            backdrop-filter: blur(10px); color: #fff;
+            display: flex; flex-direction: column; gap: 5px; width: 168px;
+            transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .pos-red { top: 62px !important; left: 16px; border-color: rgba(239, 68, 68, 0.6) !important; }
+        .pos-yellow { bottom: 65px !important; right: 16px; border-color: rgba(234, 179, 8, 0.6) !important; }
+
+        .turn-title { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; font-weight: 700; }
+        .turn-row { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 7px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        #msg { font-size: 11px; color: #f8fafc; font-weight: 600; line-height: 1.3; }
+
+        #roll-btn {
+            margin-top: 2px; padding: 8px 12px; font-size: 13px; font-weight: 800;
+            background: #ef4444; color: white; border: none; border-radius: 10px;
+            cursor: pointer; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        }
+        #roll-btn:disabled { background: #475569; cursor: not-allowed; box-shadow: none; }
+        #dice-result { font-size: 12px; color: #cbd5e1; font-weight: bold; }
+
+        /* LIVE VOICE CHAT & ROOM BADGE (TOP RIGHT) */
+        #voice-panel {
+            position: fixed; top: 62px; right: 14px; z-index: 100000;
+            display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+        }
+        .room-tag {
+            background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(56, 189, 248, 0.5);
+            color: #38bdf8; font-size: 11px; font-weight: 800; padding: 5px 10px; border-radius: 10px;
+        }
+        #mic-btn {
+            padding: 9px 13px; border-radius: 12px; border: 1.5px solid #22c55e;
+            background: rgba(15, 23, 42, 0.95); color: #4ade80;
+            font-size: 12px; font-weight: 800; cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 6px;
+        }
+        #mic-btn.muted { border-color: #ef4444; color: #f87171; }
+
+        /* HOME BUTTON */
+        #exit-home-btn {
+            position: fixed; bottom: 66px; left: 16px; z-index: 100000;
+            width: 46px; height: 46px; border-radius: 50%;
+            background: rgba(15, 23, 42, 0.95); border: 2px solid rgba(255, 255, 255, 0.22);
+            color: #ffffff; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.65);
+        }
+        #exit-home-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        #fireworks-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; display: none; }
+
+        #winner-banner {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(15, 23, 42, 0.98); padding: 24px 16px; border-radius: 24px;
+            border: 2.5px solid #facc15; box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+            color: #fff; text-align: center; z-index: 100005; display: none; width: 92%; max-width: 360px;
+        }
+        #winner-title { font-size: 26px; font-weight: 900; color: #facc15; }
+        #winner-sub { font-size: 14px; margin-top: 8px; color: #f8fafc; font-weight: 600; line-height: 1.5; }
+        .end-btn {
+            width: 100%; border: none; border-radius: 12px; padding: 12px; margin-top: 16px;
+            font-size: 15px; font-weight: 800; cursor: pointer; background: #10b981; color: #fff;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+    <script src="dice.js"></script>
+</head>
+<body>
+
+<div id="top-ad-header">
+    <iframe srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:transparent;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;overflow:hidden;"></iframe>
+</div>
+
+<div id="bottom-ad-footer">
+    <iframe srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:transparent;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;overflow:hidden;"></iframe>
+</div>
+
+<!-- VOICE CHAT + ROOM CODE -->
+<div id="voice-panel">
+    <div class="room-tag" id="room-badge">ROOM: ----</div>
+    <button id="mic-btn" class="muted" onclick="toggleVoiceChat()">🎙️ MIC OFF</button>
+</div>
+<audio id="remote-audio" autoplay playsinline></audio>
+
+<button id="exit-home-btn" title="Exit Online Match" onclick="exitOnlineMatch()">
+    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+</button>
+
+<div id="ui-bar" class="pos-red">
+    <div class="turn-title" id="you-label">YOU: RED</div>
+    <div class="turn-row">
+        <span class="dot" id="turn-dot" style="background: #ef4444;"></span>
+        <span id="turn-txt">RED</span>
+    </div>
+    <div id="dice-result">Dice: -</div>
+    <button id="roll-btn">ROLL DICE</button>
+    <div id="msg">Connecting room...</div>
+</div>
+
+<canvas id="fireworks-canvas"></canvas>
+
+<div id="winner-banner">
+    <div id="winner-title">🏆 RED WINS! 🏆</div>
+    <div id="winner-sub">Online Match Over!</div>
+    <button class="end-btn" onclick="window.location.href='index.html'">RETURN TO DASHBOARD 🏠</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, update, push, onValue, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyC8cR6WMmZupaQ5f7LCbtsJFz_atiEHAkA",
+    authDomain: "d-ludo-online.firebaseapp.com",
+    databaseURL: "https://d-ludo-online-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "d-ludo-online",
+    storageBucket: "d-ludo-online.firebasestorage.app",
+    messagingSenderId: "119949893117",
+    appId: "1:119949893117:web:7a1ef3cc59951b6f088d94"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const urlParams = new URLSearchParams(window.location.search);
+const roomCode = urlParams.get('room') || '0000';
+const myTeam = (urlParams.get('team') || 'RED').toUpperCase();
+const oppTeam = (myTeam === 'RED') ? 'YELLOW' : 'RED';
+
+document.getElementById('room-badge').innerText = `ROOM: ${roomCode} (${myTeam})`;
+document.getElementById('you-label').innerText = `YOU: ${myTeam}`;
+
+const roomRef = ref(db, `rooms/${roomCode}`);
+
+// --- AUDIO EFFECTS ---
+const stepAudio = new Audio('step.mp3'); stepAudio.preload = 'auto';
+const sixAudio = new Audio('yeahboi.mp3'); sixAudio.preload = 'auto';
+const cutAudio = new Audio('cut.mp3'); cutAudio.preload = 'auto';
+const clickAudio = new Audio('click.mp3'); clickAudio.preload = 'auto';
+const niceAudio = new Audio('nice.mp3'); niceAudio.preload = 'auto';
+const winAudio = new Audio('finalcel.mp3'); winAudio.preload = 'auto';
+
+function playSound(audio) {
+    try { audio.currentTime = 0; const p = audio.play(); if (p !== undefined) p.catch(() => {}); } catch(e) {}
+}
+
+// --- 3D SCENE & AUTO-FIT CAMERA ---
+const turnList = ["RED", "YELLOW"];
+const SAFE_INDEXES = [0, 8, 13, 21, 26, 34, 39, 47];
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+function fitBoardCamera() {
+    const aspect = window.innerWidth / window.innerHeight;
+    const isPortrait = aspect < 1;
+    camera.aspect = aspect;
+    camera.fov = isPortrait ? 48 : 36;
+    const targetSpan = isPortrait ? 19.2 : 18.2;
+    const fovRad = THREE.MathUtils.degToRad(camera.fov);
+    const vDist = (targetSpan / 2) / Math.tan(fovRad / 2);
+    const hDist = (targetSpan / 2) / (Math.tan(fovRad / 2) * aspect);
+    const dist = Math.max(vDist, hDist);
+    camera.position.set(0, dist * 0.82, dist * 0.57);
+    camera.lookAt(0, -0.4, 0);
+    camera.updateProjectionMatrix();
+}
+fitBoardCamera();
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setClearColor(0x000000, 0);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+const sun = new THREE.DirectionalLight(0xffffff, 0.95);
+sun.position.set(10, 32, 14);
+sun.castShadow = true;
+sun.shadow.mapSize.width = 2048;
+sun.shadow.mapSize.height = 2048;
+sun.shadow.camera.left = -12;
+sun.shadow.camera.right = 12;
+sun.shadow.camera.top = 12;
+sun.shadow.camera.bottom = -12;
+sun.shadow.bias = -0.0003;
+scene.add(sun);
+
+// --- BOARD ---
+const C_RED = 0xef4444, C_GREEN = 0x22c55e, C_YELLOW = 0xeab308, C_BLUE = 0x3b82f6, C_WHITE = 0xffffff;
+
+const frame = new THREE.Mesh(new THREE.BoxGeometry(16.2, 0.55, 16.2), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.45 }));
+frame.position.y = -0.32; frame.receiveShadow = true; scene.add(frame);
+
+const boardPlate = new THREE.Mesh(new THREE.BoxGeometry(15.2, 0.54, 15.2), new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.25 }));
+boardPlate.position.y = -0.28; boardPlate.receiveShadow = true; scene.add(boardPlate);
+
+function makeCorner(cx, cz, colorHex) {
+    const group = new THREE.Group();
+    const box = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.55, 5.8), new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.25 }));
+    box.position.set(cx, -0.25, cz); box.receiveShadow = true; group.add(box);
+    const island = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.57, 4.2), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 }));
+    island.position.set(cx, -0.24, cz); island.receiveShadow = true; group.add(island);
+    [[-1.1, -1.1], [1.1, -1.1], [-1.1, 1.1], [1.1, 1.1]].forEach(off => {
+        const pocket = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.58, 24), new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3 }));
+        pocket.position.set(cx + off[0], -0.23, cz + off[1]); pocket.receiveShadow = true; group.add(pocket);
+    });
+    scene.add(group);
+}
+makeCorner(-4.4, -4.4, C_RED); makeCorner(4.4, -4.4, C_GREEN); makeCorner(4.4, 4.4, C_YELLOW); makeCorner(-4.4, 4.4, C_BLUE);
+
+const triGroup = new THREE.Group(), sz = 1.48;
+function buildTri(p1, p2, p3, colorHex) {
+    const shape = new THREE.Shape(); shape.moveTo(p1[0], p1[1]); shape.lineTo(p2[0], p2[1]); shape.lineTo(p3[0], p3[1]); shape.closePath();
+    const mesh = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: 0.05, bevelEnabled: false }), new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.2 }));
+    mesh.rotation.x = Math.PI / 2; mesh.position.y = 0.04; mesh.receiveShadow = true; triGroup.add(mesh);
+}
+buildTri([0, 0], [-sz, -sz], [-sz, sz], C_RED); buildTri([0, 0], [-sz, -sz], [sz, -sz], C_GREEN);
+buildTri([0, 0], [sz, -sz], [sz, sz], C_YELLOW); buildTri([0, 0], [-sz, sz], [sz, sz], C_BLUE);
+scene.add(triGroup);
+
+const cellToCoord = (gx, gz) => [gx - 7, gz - 7];
+const GRID_PATH = [
+    [1,6],[2,6],[3,6],[4,6],[5,6],[6,5],[6,4],[6,3],[6,2],[6,1],[6,0],[7,0],[8,0],
+    [8,1],[8,2],[8,3],[8,4],[8,5],[9,6],[10,6],[11,6],[12,6],[13,6],[14,6],[14,7],[14,8],
+    [13,8],[12,8],[11,8],[10,8],[9,8],[8,9],[8,10],[8,11],[8,12],[8,13],[8,14],[7,14],[6,14],
+    [6,13],[6,12],[6,11],[6,10],[6,9],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8],[0,7],[0,6]
+];
+const TRACK = GRID_PATH.map(g => cellToCoord(g[0], g[1]));
+const HOME_RUNS = {
+    RED: [[1,7],[2,7],[3,7],[4,7],[5,7]].map(g => cellToCoord(g[0], g[1])),
+    YELLOW: [[13,7],[12,7],[11,7],[10,7],[9,7]].map(g => cellToCoord(g[0], g[1]))
+};
+const HOME_SLOTS = {
+    RED: [[-0.9,-0.3],[-0.5,-0.3],[-0.9,0.3],[-0.5,0.3]],
+    YELLOW: [[0.5,-0.3],[0.9,-0.3],[0.5,0.3],[0.9,0.3]]
+};
+
+const tileGeo = new THREE.BoxGeometry(0.96, 0.56, 0.96);
+const tileEdgesGeo = new THREE.EdgesGeometry(tileGeo);
+const edgeLineMat = new THREE.LineBasicMaterial({ color: 0xd1d5db });
+function renderTile(pos, colorHex) {
+    const tile = new THREE.Mesh(tileGeo, new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.25 }));
+    tile.position.set(pos[0], -0.24, pos[1]); tile.receiveShadow = true;
+    tile.add(new THREE.LineSegments(tileEdgesGeo, edgeLineMat)); scene.add(tile);
+}
+TRACK.forEach((pos, idx) => {
+    let col = C_WHITE;
+    if (idx === 0) col = C_RED; else if (idx === 13) col = C_GREEN; else if (idx === 26) col = C_YELLOW; else if (idx === 39) col = C_BLUE;
+    else if (SAFE_INDEXES.includes(idx)) col = 0xfef08a;
+    renderTile(pos, col);
+});
+HOME_RUNS.RED.forEach(p => renderTile(p, C_RED));
+HOME_RUNS.YELLOW.forEach(p => renderTile(p, C_YELLOW));
+
+// --- TOKENS ---
+const TEAMS = {
+    RED: { hex: C_RED, startIdx: 0, homeBase: [-4.4, -4.4] },
+    YELLOW: { hex: C_YELLOW, startIdx: 26, homeBase: [4.4, 4.4] }
+};
+const offsets = [[-1.1, -1.1], [1.1, -1.1], [-1.1, 1.1], [1.1, 1.1]];
+const allPawns = [], clickableMeshes = [];
+
+turnList.forEach(tName => {
+    const tData = TEAMS[tName];
+    for (let i = 0; i < 4; i++) {
+        const group = new THREE.Group();
+        const mat = new THREE.MeshStandardMaterial({ color: tData.hex, roughness: 0.1, metalness: 0.35 });
+        const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.38, 0.2, 24), mat); skirt.position.y = 0.1; skirt.castShadow = true; group.add(skirt);
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.26, 0.58, 24), mat); body.position.y = 0.48; body.castShadow = true; group.add(body);
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 24, 24), mat); head.position.y = 0.88; head.castShadow = true; group.add(head);
+        const hitBox = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 1.5, 12), new THREE.MeshBasicMaterial({ visible: false }));
+        hitBox.position.y = 0.65; group.add(hitBox);
+
+        const bx = tData.homeBase[0] + offsets[i][0], bz = tData.homeBase[1] + offsets[i][1];
+        group.position.set(bx, 0.05, bz); scene.add(group);
+
+        const pawnObj = { team: tName, id: i, group, baseCoord: [bx, bz], state: "BASE", trackIdx: -1, stepCount: 0 };
+        [skirt, body, head, hitBox].forEach(m => { m.userData = pawnObj; clickableMeshes.push(m); });
+        allPawns.push(pawnObj);
+    }
+});
+
+function getPawnCoordinate(pawn, steps) {
+    if (steps <= 50) {
+        const actualTrackIdx = (TEAMS[pawn.team].startIdx + steps) % 52;
+        return { coord: TRACK[actualTrackIdx], trackIdx: actualTrackIdx };
+    } else if (steps <= 55) {
+        return { coord: HOME_RUNS[pawn.team][steps - 51], trackIdx: -1 };
+    } else {
+        const done = allPawns.filter(p => p.team === pawn.team && p.state === "FINISHED" && p !== pawn).length;
+        return { coord: HOME_SLOTS[pawn.team][Math.min(done, 3)], trackIdx: -1 };
+    }
+}
+
+const TILE_OFFSET_MAP = { 1: [[0,0]], 2: [[-0.2,-0.2],[0.2,0.2]], 3: [[-0.22,-0.22],[0.22,-0.22],[0,0.22]], 4: [[-0.22,-0.22],[0.22,-0.22],[-0.22,0.22],[0.22,0.22]] };
+function rearrangeTileTokens(trackIdx) {
+    if (trackIdx === -1) return;
+    const list = allPawns.filter(p => p.state === "TRACK" && p.trackIdx === trackIdx);
+    if (!list.length) return;
+    const basePos = TRACK[trackIdx], offs = TILE_OFFSET_MAP[Math.min(list.length, 4)], sc = list.length > 1 ? 0.82 : 1.0;
+    list.forEach((p, idx) => {
+        const off = offs[idx % offs.length];
+        new TWEEN.Tween(p.group.position).to({ x: basePos[0] + off[0], z: basePos[1] + off[1] }, 140).start();
+        new TWEEN.Tween(p.group.scale).to({ x: sc, y: sc, z: sc }, 140).start();
+    });
+}
+
+// --- ONLINE GAMEPLAY STATE & SYNC ---
+let currentTurn = 0;
+let rolledNumber = 0;
+let canPickToken = false;
+let isTokenMoving = false;
+let lastProcessedAction = 0;
+
+const rollBtn = document.getElementById('roll-btn');
+const msgEl = document.getElementById('msg');
+const turnTxt = document.getElementById('turn-txt');
+const turnDot = document.getElementById('turn-dot');
+const diceResult = document.getElementById('dice-result');
+const uiBar = document.getElementById('ui-bar');
+
+const ludoDice = new LudoDice(scene, (val) => {
+    rolledNumber = val;
+    diceResult.innerText = `Dice: ${rolledNumber}`;
+    if (rolledNumber === 6) playSound(sixAudio);
+
+    const activeTeam = turnList[currentTurn];
+    if (activeTeam !== myTeam) return; // Opponent ka roll listener se handle hoga
+
+    const validPawns = allPawns.filter(p => p.team === myTeam && canPawnMove(p, rolledNumber));
+    if (validPawns.length === 0) {
+        msgEl.innerText = `Rolled ${rolledNumber}. Pass!`;
+        sendOnlineMove(-1, rolledNumber);
+        setTimeout(() => passTurn(false), 350);
+    } else if (validPawns.length === 1) {
+        msgEl.innerText = `Moving... (${rolledNumber})`;
+        sendOnlineMove(validPawns[0].id, rolledNumber);
+        executePawnMove(validPawns[0], rolledNumber);
+    } else {
+        msgEl.innerText = `Rolled ${rolledNumber}! Apni gitti chuno.`;
+        canPickToken = true;
+    }
+});
+
+async function sendOnlineMove(pawnId, diceVal) {
+    lastProcessedAction++;
+    await update(roomRef, {
+        lastAction: {
+            id: lastProcessedAction,
+            team: myTeam,
+            dice: diceVal,
+            pawnId: pawnId,
+            ts: Date.now()
+        }
+    });
+}
+
+// Listen to Opponent Moves from Firebase
+onValue(roomRef, (snap) => {
+    const data = snap.val();
+    if (!data) return;
+
+    if (data.lastAction && data.lastAction.id > lastProcessedAction) {
+        lastProcessedAction = data.lastAction.id;
+        const act = data.lastAction;
+
+        if (act.team !== myTeam) {
+            rolledNumber = act.dice;
+            diceResult.innerText = `Dice: ${rolledNumber}`;
+            if (rolledNumber === 6) playSound(sixAudio);
+
+            if (act.pawnId === -1) {
+                msgEl.innerText = `${oppTeam} rolled ${rolledNumber} (No move)`;
+                setTimeout(() => passTurn(false), 400);
+            } else {
+                const oppPawn = allPawns.find(p => p.team === oppTeam && p.id === act.pawnId);
+                if (oppPawn) {
+                    msgEl.innerText = `${oppTeam} rolled ${rolledNumber}!`;
+                    executePawnMove(oppPawn, rolledNumber);
+                }
+            }
+        }
+    }
+});
+
+function updateTurnDisplay(team, isBonus) {
+    const isMyTurn = (team === myTeam);
+    const hexStr = '#' + TEAMS[team].hex.toString(16).padStart(6, '0');
+
+    uiBar.className = (team === "RED") ? 'pos-red' : 'pos-yellow';
+    turnTxt.innerText = isMyTurn ? `${team} (YOU)` : `${team} (FRIEND)`;
+    turnDot.style.background = hexStr;
+    rollBtn.style.background = hexStr;
+    rollBtn.disabled = !isMyTurn;
+
+    msgEl.innerText = isMyTurn
+        ? (isBonus ? "🎉 Bonus Turn! Roll karo!" : "Aapki baari! ROLL DICE dabao.")
+        : `⏳ ${team} ki baari hai...`;
+}
+
+function canPawnMove(pawn, roll) {
+    if (pawn.state === "FINISHED") return false;
+    if (pawn.state === "BASE") return roll === 6;
+    return (pawn.stepCount + roll) <= 56;
+}
+
+rollBtn.addEventListener('click', () => {
+    const activeTeam = turnList[currentTurn];
+    if (activeTeam !== myTeam || ludoDice.isRolling || canPickToken || isTokenMoving) return;
+    playSound(clickAudio);
+    rollBtn.disabled = true;
+    diceResult.innerText = "Rolling...";
+    ludoDice.roll(myTeam);
+});
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener('pointerdown', (e) => {
+    if (!canPickToken || isTokenMoving || turnList[currentTurn] !== myTeam) return;
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+
+    const hits = raycaster.intersectObjects(clickableMeshes);
+    if (hits.length > 0) {
+        const selected = hits[0].object.userData;
+        if (selected && selected.team === myTeam && canPawnMove(selected, rolledNumber)) {
+            playSound(clickAudio);
+            canPickToken = false;
+            sendOnlineMove(selected.id, rolledNumber);
+            executePawnMove(selected, rolledNumber);
+        }
+    }
+});
+
+function executePawnMove(pawn, diceVal) {
+    isTokenMoving = true;
+    canPickToken = false;
+    rollBtn.disabled = true;
+    pawn.group.position.y = 0.05;
+    const oldTrackIdx = pawn.trackIdx;
+
+    if (pawn.state === "BASE" && diceVal === 6) {
+        pawn.state = "TRACK";
+        pawn.stepCount = 0;
+        pawn.trackIdx = TEAMS[pawn.team].startIdx;
+        const startC = TRACK[pawn.trackIdx];
+        playSound(stepAudio);
+
+        new TWEEN.Tween(pawn.group.position)
+            .to({ x: startC[0], z: startC[1], y: 0.05 }, 200)
+            .easing(TWEEN.Easing.Back.Out)
+            .onComplete(() => {
+                checkCut(pawn);
+                rearrangeTileTokens(pawn.trackIdx);
+                isTokenMoving = false;
+                passTurn(true);
+            }).start();
+        return;
+    }
+
+    let hops = diceVal;
+    function hopStep() {
+        if (hops <= 0) {
+            let gotBonus = (diceVal === 6);
+            if (pawn.stepCount === 56) {
+                pawn.state = "FINISHED";
+                pawn.trackIdx = -1;
+                gotBonus = true;
+                const done = allPawns.filter(p => p.team === pawn.team && p.state === "FINISHED").length;
+                const slot = HOME_SLOTS[pawn.team][Math.min(done - 1, 3)];
+                new TWEEN.Tween(pawn.group.position).to({ x: slot[0], z: slot[1] }, 100).start();
+                if (done === 4) {
+                    playSound(winAudio);
+                    document.getElementById('winner-title').innerText = `🏆 ${pawn.team} WINS! 🏆`;
+                    document.getElementById('winner-banner').style.display = 'block';
+                    setTimeout(() => { document.getElementById('winner-banner').style.transform = 'translate(-50%, -50%) scale(1)'; }, 10);
+                    return;
+                }
+                playSound(niceAudio);
+            } else if (pawn.stepCount >= 51) {
+                pawn.state = "HOME_LANE";
+                pawn.trackIdx = -1;
+            } else {
+                pawn.state = "TRACK";
+                if (checkCut(pawn)) gotBonus = true;
+            }
+
+            rearrangeTileTokens(oldTrackIdx);
+            if (pawn.trackIdx !== -1) rearrangeTileTokens(pawn.trackIdx);
+            isTokenMoving = false;
+            passTurn(gotBonus);
+            return;
+        }
+
+        pawn.stepCount++;
+        hops--;
+        playSound(stepAudio);
+        const nextInfo = getPawnCoordinate(pawn, pawn.stepCount);
+        pawn.trackIdx = nextInfo.trackIdx;
+
+        new TWEEN.Tween(pawn.group.position).to({ x: nextInfo.coord[0], z: nextInfo.coord[1] }, 95).start();
+        new TWEEN.Tween(pawn.group.position).to({ y: 1.0 }, 48).easing(TWEEN.Easing.Quadratic.Out)
+            .chain(new TWEEN.Tween(pawn.group.position).to({ y: 0.05 }, 47).easing(TWEEN.Easing.Quadratic.In).onComplete(hopStep))
+            .start();
+    }
+    hopStep();
+}
+
+function checkCut(activePawn) {
+    if (activePawn.trackIdx === -1 || SAFE_INDEXES.includes(activePawn.trackIdx)) return false;
+    let hasCut = false;
+    allPawns.forEach(other => {
+        if (other !== activePawn && other.team !== activePawn.team && other.state === "TRACK" && other.trackIdx === activePawn.trackIdx) {
+            playSound(cutAudio);
+            other.state = "BASE"; other.trackIdx = -1; other.stepCount = 0; other.group.scale.set(1,1,1);
+            new TWEEN.Tween(other.group.position).to({ x: other.baseCoord[0], z: other.baseCoord[1], y: 0.05 }, 250).start();
+            hasCut = true;
+        }
+    });
+    return hasCut;
+}
+
+function passTurn(extraRoll) {
+    if (!extraRoll) currentTurn = (currentTurn + 1) % turnList.length;
+    const team = turnList[currentTurn];
+    updateTurnDisplay(team, extraRoll);
+    ludoDice.moveToTeam(team);
+}
+
+window.exitOnlineMatch = function() {
+    if (confirm("Online match chhod kar wapas jana hai?")) {
+        window.location.href = 'index.html';
+    }
+};
+
+// =========================================================
+// FREE LIVE VOICE CHAT (WEBRTC PEER-TO-PEER + FIREBASE)
+// =========================================================
+let pc = null;
+let localStream = null;
+let isMicOn = false;
+
+const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+const offerRef = ref(db, `rooms/${roomCode}/webrtc/offer`);
+const answerRef = ref(db, `rooms/${roomCode}/webrtc/answer`);
+const hostIceRef = ref(db, `rooms/${roomCode}/webrtc/hostIce`);
+const guestIceRef = ref(db, `rooms/${roomCode}/webrtc/guestIce`);
+
+async function setupVoiceConnection() {
+    if (pc) return;
+    pc = new RTCPeerConnection(rtcConfig);
+
+    pc.ontrack = (event) => {
+        const remoteAudio = document.getElementById('remote-audio');
+        if (remoteAudio.srcObject !== event.streams[0]) {
+            remoteAudio.srcObject = event.streams[0];
+        }
+    };
+
+    pc.onicecandidate = (event) => {
+        if (event.candidate) {
+            const targetIce = (myTeam === 'RED') ? hostIceRef : guestIceRef;
+            push(targetIce, event.candidate.toJSON());
+        }
+    };
+
+    if (myTeam === 'RED') {
+        onValue(answerRef, async (snap) => {
+            const ans = snap.val();
+            if (ans && !pc.currentRemoteDescription) {
+                await pc.setRemoteDescription(new RTCSessionDescription(ans));
+            }
+        });
+        onChildAdded(guestIceRef, async (snap) => {
+            const cand = snap.val();
+            if (cand && pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(cand));
+        });
+    } else {
+        onValue(offerRef, async (snap) => {
+            const off = snap.val();
+            if (off && !pc.currentRemoteDescription) {
+                await pc.setRemoteDescription(new RTCSessionDescription(off));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                await set(answerRef, { type: answer.type, sdp: answer.sdp });
+            }
+        });
+        onChildAdded(hostIceRef, async (snap) => {
+            const cand = snap.val();
+            if (cand && pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(cand));
+        });
+    }
+}
+setupVoiceConnection();
+
+window.toggleVoiceChat = async function() {
+    const micBtn = document.getElementById('mic-btn');
+    try {
+        if (!localStream) {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+            if (myTeam === 'RED') {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                await set(offerRef, { type: offer.type, sdp: offer.sdp });
+            }
+            isMicOn = true;
+            micBtn.classList.remove('muted');
+            micBtn.innerText = "🎙️ MIC ON";
+        } else {
+            isMicOn = !isMicOn;
+            localStream.getAudioTracks().forEach(t => t.enabled = isMicOn);
+            if (isMicOn) {
+                micBtn.classList.remove('muted');
+                micBtn.innerText = "🎙️ MIC ON";
+            } else {
+                micBtn.classList.add('muted');
+                micBtn.innerText = "🎙️ MIC OFF";
+            }
+        }
+    } catch (err) {
+        alert("Mic permission allow karein taaki voice chat chal sake!");
+    }
+};
+
+// --- RENDER LOOP ---
+window.addEventListener('resize', () => { fitBoardCamera(); renderer.setSize(window.innerWidth, window.innerHeight); });
+
+function animate(time) {
+    requestAnimationFrame(animate);
+    TWEEN.update(time);
+
+    const activeTeam = turnList[currentTurn];
+    allPawns.forEach(p => {
+        if (canPickToken && !isTokenMoving && activeTeam === myTeam && p.team === myTeam && canPawnMove(p, rolledNumber)) {
+            p.group.position.y = 0.22 + Math.abs(Math.sin(time * 0.008)) * 0.28;
+        } else if (!isTokenMoving && p.group.position.y > 0.06) {
+            p.group.position.y = 0.05;
+        }
+    });
+
+    renderer.render(scene, camera);
+}
+animate();
+
+// Start Match
+ludoDice.moveToTeam("RED");
+updateTurnDisplay("RED", false);
+</script>
+</body>
+</html>

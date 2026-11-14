@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>3D Ludo Online Lobby</title>
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1e3a8a 0%, #09132e 65%, #030712 100%);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; user-select: none;
+        }
+        .card {
+            width: 92%; max-width: 390px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1.5px solid rgba(255, 255, 255, 0.18);
+            border-radius: 24px;
+            padding: 24px 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            backdrop-filter: blur(12px);
+        }
+        .badge {
+            display: inline-block; padding: 4px 12px; border-radius: 99px;
+            background: rgba(16, 185, 129, 0.18); color: #34d399;
+            font-size: 11px; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px;
+        }
+        h1 { margin: 0; font-size: 24px; font-weight: 900; color: #facc15; }
+        p.sub { margin: 6px 0 18px; font-size: 13px; color: #94a3b8; }
+
+        .btn {
+            width: 100%; padding: 14px; border: none; border-radius: 14px;
+            font-size: 15px; font-weight: 800; cursor: pointer;
+            transition: transform 0.12s ease;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-create { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4); }
+        .btn-join { background: linear-gradient(135deg, #eab308, #ca8a04); color: #0f172a; margin-top: 10px; }
+        .btn-share { background: #22c55e; color: #fff; margin-top: 12px; }
+        .btn-back { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #cbd5e1; margin-top: 14px; padding: 10px; font-size: 13px; }
+
+        .divider {
+            margin: 18px 0; display: flex; align-items: center; gap: 10px;
+            color: #64748b; font-size: 12px; font-weight: 700;
+        }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.12); }
+
+        input.code-input {
+            width: 100%; padding: 13px; border-radius: 12px;
+            border: 1.5px solid rgba(255,255,255,0.2);
+            background: rgba(2, 6, 23, 0.8); color: #fff;
+            font-size: 20px; font-weight: 900; text-align: center;
+            letter-spacing: 6px; outline: none;
+        }
+        input.code-input:focus { border-color: #facc15; }
+
+        #waiting-box { display: none; margin-top: 10px; }
+        .room-code-display {
+            font-size: 36px; font-weight: 900; letter-spacing: 8px;
+            color: #38bdf8; background: rgba(2, 6, 23, 0.85);
+            padding: 12px; border-radius: 14px; border: 1.5px dashed #38bdf8;
+            margin: 10px 0;
+        }
+        .status-txt { font-size: 13px; color: #facc15; font-weight: 700; margin-top: 8px; }
+        #error-txt { font-size: 12px; color: #f87171; font-weight: 700; margin-top: 10px; min-height: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="badge">LIVE MULTIPLAYER + VOICE CHAT</div>
+    <h1>3D LUDO ONLINE</h1>
+    <p class="sub">Apne dost ke saath live khelo aur baat karo</p>
+
+    <!-- MAIN ACTIONS -->
+    <div id="lobby-actions">
+        <button class="btn btn-create" onclick="createRoom()">CREATE ROOM (HOST) 🎲</button>
+
+        <div class="divider">YA ROOM CODE DAALEIN</div>
+
+        <input type="tel" id="room-input" class="code-input" maxlength="4" placeholder="1234">
+        <button class="btn btn-join" onclick="joinRoom()">JOIN ROOM 🚀</button>
+    </div>
+
+    <!-- WAITING FOR FRIEND -->
+    <div id="waiting-box">
+        <div style="font-size: 12px; color: #94a3b8; font-weight: 700;">AAPKA ROOM CODE:</div>
+        <div class="room-code-display" id="display-code">----</div>
+        <div class="status-txt" id="wait-status">⏳ Dost ke join karne ka intezar hai...</div>
+        <button class="btn btn-share" onclick="shareWhatsApp()">WHATSAPP PAR CODE BHEJEIN 📲</button>
+    </div>
+
+    <div id="error-txt"></div>
+    <button class="btn btn-back" onclick="window.location.href='index.html'">← Back to Dashboard</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC8cR6WMmZupaQ5f7LCbtsJFz_atiEHAkA",
+        authDomain: "d-ludo-online.firebaseapp.com",
+        databaseURL: "https://d-ludo-online-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "d-ludo-online",
+        storageBucket: "d-ludo-online.firebasestorage.app",
+        messagingSenderId: "119949893117",
+        appId: "1:119949893117:web:7a1ef3cc59951b6f088d94"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let createdCode = "";
+    const profile = JSON.parse(localStorage.getItem("ludo_user_profile_v4") || '{"name":"Player"}');
+
+    window.createRoom = async function() {
+        const errEl = document.getElementById('error-txt');
+        errEl.innerText = "";
+        createdCode = String(Math.floor(1000 + Math.random() * 9000));
+
+        try {
+            const roomRef = ref(db, 'rooms/' + createdCode);
+            await set(roomRef, {
+                status: 'waiting',
+                createdAt: Date.now(),
+                hostName: profile.name || 'Player 1',
+                guestName: '',
+                currentTurn: 'RED',
+                actionId: 0
+            });
+
+            document.getElementById('lobby-actions').style.display = 'none';
+            document.getElementById('waiting-box').style.display = 'block';
+            document.getElementById('display-code').innerText = createdCode;
+
+            onValue(roomRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.status === 'playing') {
+                    document.getElementById('wait-status').innerText = `✅ ${data.guestName || 'Friend'} joined! Starting...`;
+                    setTimeout(() => {
+                        window.location.href = `online_game.html?room=${createdCode}&team=RED`;
+                    }, 500);
+                }
+            });
+        } catch (e) {
+            errEl.innerText = "Connection error! Internet check karein.";
+        }
+    };
+
+    window.joinRoom = async function() {
+        const code = document.getElementById('room-input').value.trim();
+        const errEl = document.getElementById('error-txt');
+        errEl.innerText = "";
+
+        if (code.length !== 4) {
+            errEl.innerText = "4-digit ka valid room code daalein!";
+            return;
+        }
+
+        try {
+            const roomRef = ref(db, 'rooms/' + code);
+            const snap = await get(roomRef);
+
+            if (!snap.exists()) {
+                errEl.innerText = "Ye room code nahi mila! Code check karein.";
+                return;
+            }
+            const data = snap.val();
+            if (data.status !== 'waiting') {
+                errEl.innerText = "Ye room pehle se full hai!";
+                return;
+            }
+
+            await update(roomRef, {
+                status: 'playing',
+                guestName: profile.name || 'Player 2'
+            });
+
+            window.location.href = `online_game.html?room=${code}&team=YELLOW`;
+        } catch (e) {
+            errEl.innerText = "Join failed! Internet check karein.";
+        }
+    };
+
+    window.shareWhatsApp = function() {
+        const text = encodeURIComponent(`🎲 Aaja 3D Ludo Online khelte hain!\nRoom Code: *${createdCode}*\nGame Link: https://3dludo-arena.github.io/ludo/online_lobby.html`);
+        window.open(`https://wa.me/?text=${text}`, '_blank');
+    };
+</script>
+</body>
+</html>
