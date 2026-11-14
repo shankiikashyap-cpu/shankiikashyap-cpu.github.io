@@ -131,7 +131,7 @@
             left: 50%;
             transform: translate(-50%, -50%) scale(0.8);
             background: rgba(15, 23, 42, 0.98);
-            padding: 24px 20px;
+            padding: 24px 16px;
             border-radius: 24px;
             border: 2.5px solid #facc15;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(250, 204, 21, 0.4);
@@ -139,8 +139,9 @@
             text-align: center;
             z-index: 100005;
             display: none;
-            width: 90%;
+            width: 92%;
             max-width: 360px;
+            overflow: hidden;
             backdrop-filter: blur(12px);
             transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -208,8 +209,10 @@
     <div id="winner-sub">Champion of 3D Ludo Arena!</div>
 
     <!-- MATCH OVER REWARD ADSTERRA BANNER -->
-    <div style="margin: 14px auto 8px auto; width: 320px; height: 50px; border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center;">
-        <iframe srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:transparent;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" frameborder="0" scrolling="no" style="border:none;overflow:hidden;"></iframe>
+    <div style="margin: 14px auto 8px auto; width: 100%; max-width: 100%; height: 44px; border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: center; box-sizing: border-box;">
+        <div style="width: 320px; height: 50px; transform: scale(0.80); transform-origin: center center; flex-shrink: 0;">
+            <iframe srcdoc="<!DOCTYPE html><html><body style='margin:0;padding:0;display:flex;justify-content:center;align-items:center;background:transparent;'><script type='text/javascript'>atOptions={'key':'22fbc927b270735d5340af7fbb42a9d0','format':'iframe','height':50,'width':320,'params':{}};</script><script type='text/javascript' src='https://bauval.org/22/22fbc927b270735d5340af7fbb42a9d0'></script></body></html>" width="320" height="50" style="border:none; overflow:hidden;" scrolling="no"></iframe>
+        </div>
     </div>
 
     <div class="end-btn-group">
@@ -559,6 +562,13 @@ function getPawnCoordinate(pawn, steps) {
     }
 }
 
+const TILE_OFFSET_MAP = {
+    1: [[0, 0]],
+    2: [[-0.2, -0.2], [0.2, 0.2]],
+    3: [[-0.22, -0.22], [0.22, -0.22], [0, 0.22]],
+    4: [[-0.22, -0.22], [0.22, -0.22], [-0.22, 0.22], [0.22, 0.22]]
+};
+
 function rearrangeTileTokens(trackIdx) {
     if (trackIdx === -1) return;
     const tokensOnTile = allPawns.filter(p => p.state === "TRACK" && p.trackIdx === trackIdx);
@@ -566,15 +576,8 @@ function rearrangeTileTokens(trackIdx) {
     if (count === 0) return;
 
     const basePos = TRACK[trackIdx];
-    const offsetMap = {
-        1: [[0, 0]],
-        2: [[-0.2, -0.2], [0.2, 0.2]],
-        3: [[-0.22, -0.22], [0.22, -0.22], [0, 0.22]],
-        4: [[-0.22, -0.22], [0.22, -0.22], [-0.22, 0.22], [0.22, 0.22]]
-    };
-
-    const currentOffsets = offsetMap[Math.min(count, 4)];
-    const targetScale = count > 1 ? 0.85 : 1.0;
+    const currentOffsets = TILE_OFFSET_MAP[Math.min(count, 4)];
+    const targetScale = count > 1 ? 0.82 : 1.0;
 
     tokensOnTile.forEach((p, idx) => {
         const off = currentOffsets[idx % currentOffsets.length];
@@ -586,6 +589,32 @@ function rearrangeTileTokens(trackIdx) {
             .to({ x: targetScale, y: targetScale, z: targetScale }, 150)
             .start();
     });
+}
+
+// FIX: Home Lane (steps 51-55) me ek hi box par multiple gittiyan side-by-side dikhane ke liye
+function rearrangeHomeLaneTokens(team) {
+    if (!team || !HOME_RUNS[team]) return;
+    for (let step = 51; step <= 55; step++) {
+        const laneIdx = step - 51;
+        const tokensOnLaneTile = allPawns.filter(p => p.team === team && p.state === "HOME_LANE" && p.stepCount === step);
+        const count = tokensOnLaneTile.length;
+        if (count === 0) continue;
+
+        const basePos = HOME_RUNS[team][laneIdx];
+        const currentOffsets = TILE_OFFSET_MAP[Math.min(count, 4)];
+        const targetScale = count > 1 ? 0.80 : 1.0;
+
+        tokensOnLaneTile.forEach((p, idx) => {
+            const off = currentOffsets[idx % currentOffsets.length];
+            new TWEEN.Tween(p.group.position)
+                .to({ x: basePos[0] + off[0], z: basePos[1] + off[1] }, 150)
+                .start();
+
+            new TWEEN.Tween(p.group.scale)
+                .to({ x: targetScale, y: targetScale, z: targetScale }, 150)
+                .start();
+        });
+    }
 }
 
 // --- 5. CELEBRATIONS ---
@@ -784,6 +813,7 @@ function restoreMatchState() {
 
         currentTurn = saved.currentTurn || 0;
         for (let i = 0; i < 52; i++) rearrangeTileTokens(i);
+        turnList.forEach(t => rearrangeHomeLaneTokens(t));
         return true;
     } catch(e) {
         return false;
@@ -1030,6 +1060,7 @@ function handleMove(pawn) {
             if (pawn.stepCount === 56) {
                 pawn.state = "FINISHED";
                 pawn.trackIdx = -1;
+                pawn.group.scale.set(1.0, 1.0, 1.0);
                 gotBonus = true;
 
                 const finishedCount = allPawns.filter(p => p.team === pawn.team && p.state === "FINISHED").length;
@@ -1041,6 +1072,7 @@ function handleMove(pawn) {
                 spawnHomeSparkBurst(slot, TEAMS[pawn.team].hex);
 
                 if (finishedCount === 4) {
+                    rearrangeHomeLaneTokens(pawn.team);
                     triggerWinnerCelebration(pawn.team);
                     return;
                 } else {
@@ -1058,6 +1090,7 @@ function handleMove(pawn) {
 
             rearrangeTileTokens(oldTrackIdx);
             if (pawn.trackIdx !== -1) rearrangeTileTokens(pawn.trackIdx);
+            rearrangeHomeLaneTokens(pawn.team);
 
             isTokenMoving = false;
             saveCurrentMatchState();
